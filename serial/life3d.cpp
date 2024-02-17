@@ -1,7 +1,7 @@
-#include <omp.h>
+#include "utils.h"
 #include <cstdio>
 #include <cstdlib>
-#include "utils.h"
+#include <omp.h>
 
 int gen_num;
 long long cells_per_side;
@@ -10,16 +10,18 @@ int input_seed;
 
 char ***grid;
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
- if (argc != 5) {
-    fprintf(stderr, "Usage: life3d <num_generations> <cells_per_side> <density> <seed>\n");
+  if (argc != 5) {
+    fprintf(
+        stderr,
+        "Usage: life3d <num_generations> <cells_per_side> <density> <seed>\n");
     return 1;
-}
+  }
 
   gen_num = atoi(argv[1]);
   cells_per_side = atoi(argv[2]);
-  density = strtof(argv[3], NULL);
+  density = atof(argv[3]);
   input_seed = atoi(argv[4]);
 
   double exec_time;
@@ -33,4 +35,3 @@ int main (int argc, char *argv[]) {
 
   return 0;
 }
-
