@@ -1,3 +1,5 @@
+#include "utils.h"
+
 #define N_SPECIES 9
 
 unsigned int seed;
@@ -22,7 +24,7 @@ char ***gen_initial_grid(long long N, float density, int input_seed)
 {
     int x, y, z;
 
-    grid = (char ***) malloc(N * sizeof(char **));
+    char ***grid = (char ***) malloc(N * sizeof(char **));
     if(grid == NULL) {
         printf("Failed to allocate matrix\n");
         exit(1);
