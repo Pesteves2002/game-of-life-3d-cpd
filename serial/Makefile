@@ -26,7 +26,7 @@ CFLAGS += -Wno-sign-compare
 # conversion warnings
 # CFLAGS += -Wconversion -Wsign-conversion
 
-.PHONY: all clean
+.PHONY: all clean fmt
 
 all: $(TARGET_EXEC)
 
@@ -34,4 +34,7 @@ life3d: utils.o
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXEC)
+
+fmt:
+	clang-format -i $(SOURCES) $(HEADERS)
 

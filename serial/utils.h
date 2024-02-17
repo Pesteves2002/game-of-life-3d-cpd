@@ -8,4 +8,3 @@
 char ***gen_initial_grid(long long cells_per_side, float density, int seed);
 
 #endif // UTILS_H
-
