@@ -23,6 +23,8 @@ CFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wfloat-
 # warning suppressions
 CFLAGS += -Wno-sign-compare
 
+CFLAGS += -O3
+
 # conversion warnings
 # CFLAGS += -Wconversion -Wsign-conversion
 
@@ -30,7 +32,7 @@ CFLAGS += -Wno-sign-compare
 
 all: $(TARGET_EXEC)
 
-life3d: utils.o
+life3d: utils.o simulation.o
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXEC)
