@@ -1,11 +1,14 @@
 #include <omp.h>
 #include <cstdio>
 #include <cstdlib>
+#include "utils.h"
 
 int gen_num;
-int cells_per_side;
+long long cells_per_side;
 float density;
-int seed;
+int input_seed;
+
+char ***grid;
 
 int main (int argc, char *argv[]) {
 
@@ -16,12 +19,11 @@ int main (int argc, char *argv[]) {
 
   gen_num = atoi(argv[1]);
   cells_per_side = atoi(argv[2]);
-  density = atof(argv[3]);
-  seed = atoi(argv[4]);
+  density = strtof(argv[3], NULL);
+  input_seed = atoi(argv[4]);
 
   double exec_time;
-
-  // grid = gen_initial_grid(N, seed, density);
+  grid = gen_initial_grid(cells_per_side, density, input_seed);
   exec_time = -omp_get_wtime();
 
   // simulation();
