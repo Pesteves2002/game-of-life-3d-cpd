@@ -11,11 +11,11 @@ long long leaderboard[20]; // defined in simulation.h
 
 long long SIZE = 3;
 
-void fillGrid(int size, int value) {
+void fillGrid(int size, bool even_gen, char new_state) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        grid[i][j][k] = value;
+        writeCellState(i, j, k, even_gen, new_state);
       }
     }
   }
@@ -26,9 +26,6 @@ void checkGrid(int size, int value, int left, int right) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
         assert(readCellState(i, j, k, false) == right);
-	if (readCellState(i, j, k, true) != left) {
-		std::cout << std::bitset<8>(readCellState(i, j, k, true)) << " " << left << std::endl;
-	}
         assert(readCellState(i, j, k, true) == left);
       }
     }
@@ -43,12 +40,14 @@ int main() {
   checkGrid(SIZE, 0, 0, 0);
 
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, i);
+    fillGrid(SIZE, false, i);
     checkGrid(SIZE, i, 0, i);
   }
 
-  for (int i = 1; i < 16; i++) {
-    fillGrid(SIZE, i << 4);
+  fillGrid(SIZE, false, 0);
+
+  for (int i = 0; i < 16; i++) {
+    fillGrid(SIZE, true, i);
     checkGrid(SIZE, i << 4, i, 0);
   }
 
