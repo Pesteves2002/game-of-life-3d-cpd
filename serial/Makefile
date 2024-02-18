@@ -10,9 +10,9 @@ HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET_EXECS := life3d
-TARGET_EXECS += tests/read tests/write
+TARGET_EXECS += tests/read tests/write tests/state
 
-CFLAGS = -std=c++17
+CFLAGS := -std=c++17 
 CFLAGS += $(INCLUDES)
 LDFLAGS := -fopenmp
 
@@ -26,7 +26,7 @@ CFLAGS += -fdiagnostics-color=always -Wall -Werror -Wextra -Wcast-align -Wfloat-
 # warning suppressions
 CFLAGS += -Wno-sign-compare
 
-CFLAGS += -O3
+CFLAGS += -O3 -g
 
 # conversion warnings
 # CFLAGS += -Wconversion -Wsign-conversion
@@ -39,9 +39,10 @@ life3d: utils.o simulation.o
 
 tests/read:  utils.o simulation.o
 tests/write: utils.o simulation.o
+tests/state: utils.o simulation.o
 
 clean:
-	rm -f $(OBJECTS) $(TARGET_EXEC)
+	rm -f $(OBJECTS) $(TARGET_EXECS)
 
 fmt:
 	clang-format -i $(SOURCES) $(HEADERS)
