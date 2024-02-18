@@ -7,7 +7,7 @@ void simulation() {
   for (int i = 1; i < gen_num + 1; i++) {
     clearCurrentLeaderboard();
 
-     debugPrintGrid();
+    debugPrintGrid();
 
     updateGridState(i % 2 == 0);
 
@@ -92,7 +92,7 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits
 char readCellState(int x, int y, int z, bool even_gen) {
-  return even_gen ? (grid[x][y][z] >> 4) : (grid[x][y][z] & 0x0F);
+  return even_gen ? ((grid[x][y][z] >> 4) & 0x0F) : (grid[x][y][z] & 0x0F);
 };
 
 // odd states will write the upper 4 bits, even states will write the lower 4

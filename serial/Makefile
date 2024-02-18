@@ -5,9 +5,12 @@ INCLUDE_DIRS := .
 INCLUDES = $(addprefix -I,$(INCLUDE_DIRS))
 
 SOURCES := $(wildcard *.cpp)
+SOURCES += $(wildcard */*.cpp)
 HEADERS := $(wildcard *.h)
+HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.cpp=.o)
-TARGET_EXEC ?= life3d
+TARGET_EXECS := life3d
+TARGET_EXECS += tests/read
 
 CFLAGS = -std=c++17
 CFLAGS += $(INCLUDES)
@@ -30,13 +33,14 @@ CFLAGS += -O3
 
 .PHONY: all clean fmt
 
-all: $(TARGET_EXEC)
+all: $(TARGET_EXECS)
 
 life3d: utils.o simulation.o
+
+tests/read:  utils.o simulation.o
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXEC)
 
 fmt:
 	clang-format -i $(SOURCES) $(HEADERS)
-
