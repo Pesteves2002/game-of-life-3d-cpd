@@ -4,27 +4,29 @@ void simulation() {
   initializeLeaderboard();
 
   // generations start at 1
-  for (int i = 1; i < gen_num + 1; i++) {
+  for (int i = 1; i < gen_num + 2; i++) {
     clearCurrentLeaderboard();
 
-    debugPrintGrid();
+    debugPrintGrid(i % 2 == 0);
 
     updateGridState(i % 2 == 0);
 
-    updateMaxLeaderboard();
+    // updateMaxLeaderboard();
   }
 
   printLeaderboard();
 };
 
-void debugPrintGrid() {
+void debugPrintGrid(bool even_gen) {
   for (int x = 0; x < grid_size; x++) {
     for (int y = 0; y < grid_size; y++) {
       for (int z = 0; z < grid_size; z++) {
-        if (grid[x][y][z] == 0) {
+        int valueToPrint = even_gen ? (int)((grid[x][y][z] >> 4) & 0x0F)
+                                    : (int)((grid[x][y][z] & 0x0F));
+        if (valueToPrint == 0) {
           std::cout << "  ";
         } else {
-          std::cout << (int)grid[x][y][z] << " ";
+          std::cout << valueToPrint << " ";
         }
       }
       std::cout << std::endl;
@@ -87,7 +89,7 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 
   writeCellState(x, y, z, even_gen, new_state);
 
-  writeToLeaderboard(new_state);
+  // writeToLeaderboard(new_state);
 };
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits
@@ -99,9 +101,9 @@ char readCellState(int x, int y, int z, bool even_gen) {
 // bits
 void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
   if (even_gen) {
-    grid[x][y][z] = (grid[x][y][z] & 0x0F) | (new_state << 4);
-  } else {
     grid[x][y][z] = (grid[x][y][z] & 0xF0) | new_state;
+  } else {
+    grid[x][y][z] = (grid[x][y][z] & 0x0F) | (new_state << 4);
   }
 };
 
@@ -119,6 +121,7 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
         char value = readCellState((x + i + grid_size) % grid_size,
                                    (y + j + grid_size) % grid_size,
                                    (z + k + grid_size) % grid_size, even_gen);
+
         if (value != 0) {
           neighborsValues[value]++;
           aliveCounter++;
@@ -126,7 +129,6 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
       }
     }
   }
-
   if (!alive)
     return aliveCounter >= 7 && aliveCounter <= 10
                ? getMostFrequentValue(neighborsValues)
@@ -136,7 +138,7 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
     return 0;
   }
 
-  return grid[x][y][z]; // no change
+  return readCellState(x, y, z, even_gen);
 };
 
 char getMostFrequentValue(std::map<char, int> neighborsValues) {

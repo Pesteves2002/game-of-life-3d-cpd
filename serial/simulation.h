@@ -16,7 +16,7 @@ extern long long leaderboard[20]; // contains the last generation and the
                                   // maximum population of each run
 void simulation();
 
-void debugPrintGrid();
+void debugPrintGrid(bool even_gen);
 
 void initializeLeaderboard();
 

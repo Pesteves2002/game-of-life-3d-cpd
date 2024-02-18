@@ -10,7 +10,7 @@ HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET_EXECS := life3d
-TARGET_EXECS += tests/read tests/write tests/state
+TARGET_EXECS += tests/read tests/write tests/state tests/example
 
 CFLAGS := -std=c++17 
 CFLAGS += $(INCLUDES)
@@ -40,6 +40,7 @@ life3d: utils.o simulation.o
 tests/read:  utils.o simulation.o
 tests/write: utils.o simulation.o
 tests/state: utils.o simulation.o
+tests/example: utils.o simulation.o
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXECS)
