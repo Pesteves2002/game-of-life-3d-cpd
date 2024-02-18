@@ -7,11 +7,11 @@ void simulation() {
   for (int i = 1; i < gen_num + 2; i++) {
     clearCurrentLeaderboard();
 
-    debugPrintGrid(i % 2 == 0);
+    // debugPrintGrid(i % 2 == 0);
 
     updateGridState(i % 2 == 0);
 
-    // updateMaxLeaderboard();
+    updateMaxLeaderboard(i);
   }
 
   printLeaderboard();
@@ -38,8 +38,19 @@ void debugPrintGrid(bool even_gen) {
 };
 
 void initializeLeaderboard() {
-  for (int i = 0; i < 20; i++) {
-    leaderboard[i] = 0;
+  for (int x = 0; x < grid_size; x++) {
+    for (int y = 0; y < grid_size; y++) {
+      for (int z = 0; z < grid_size; z++) {
+        int value = (int)readCellState(x, y, z, false);
+        if (value != 0) {
+          leaderboard[value - 1]++;
+        }
+      }
+    }
+  }
+  for (int i = 0; i < 9; i++) {
+    leaderboard[i + 9] = leaderboard[i];
+    leaderboard[i + 18] = 0;
   }
 };
 
@@ -49,22 +60,23 @@ void clearCurrentLeaderboard() {
   }
 };
 
-void updateMaxLeaderboard() {
+void updateMaxLeaderboard(int current_gen) {
   for (int i = 0; i < 9; i++) {
     if (leaderboard[i] > leaderboard[i + 9]) {
       leaderboard[i + 9] = leaderboard[i];
+      leaderboard[i + 18] = current_gen;
     }
   }
 };
 
 void printLeaderboard() {
   for (int i = 0; i < 9; i++) {
-    std::cout << i + 1 << " " << leaderboard[i + 9] << " " << leaderboard[i]
-              << std::endl;
+    std::cout << i + 1 << " " << leaderboard[i + 9] << " "
+              << leaderboard[i + 18] << std::endl;
   }
 };
 
-void writeToLeaderboard(char new_state) {
+void writeToLeaderboard(int new_state) {
   if (new_state == 0) {
     return;
   }
@@ -89,7 +101,7 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 
   writeCellState(x, y, z, even_gen, new_state);
 
-  // writeToLeaderboard(new_state);
+  writeToLeaderboard((int)new_state);
 };
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits

@@ -6,14 +6,16 @@
 #include <iostream>
 #include <map>
 
+const int LEADERBOARD_SIZE = 27;
+
 extern char ***grid;
 
 extern int gen_num;
 
 extern long long grid_size;
 
-extern long long leaderboard[20]; // contains the last generation and the
-                                  // maximum population of each run
+extern long long leaderboard[LEADERBOARD_SIZE];
+
 void simulation();
 
 void debugPrintGrid(bool even_gen);
@@ -22,7 +24,7 @@ void initializeLeaderboard();
 
 void clearCurrentLeaderboard();
 
-void updateMaxLeaderboard();
+void updateMaxLeaderboard(int current_gen);
 
 void printLeaderboard();
 
