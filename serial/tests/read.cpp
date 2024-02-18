@@ -26,9 +26,6 @@ void checkGrid(int size, int value, int left, int right) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
         assert(readCellState(i, j, k, false) == right);
-	if (readCellState(i, j, k, true) != left) {
-		std::cout << std::bitset<8>(readCellState(i, j, k, true)) << " " << left << std::endl;
-	}
         assert(readCellState(i, j, k, true) == left);
       }
     }
@@ -47,7 +44,7 @@ int main() {
     checkGrid(SIZE, i, 0, i);
   }
 
-  for (int i = 1; i < 16; i++) {
+  for (int i = 0; i < 16; i++) {
     fillGrid(SIZE, i << 4);
     checkGrid(SIZE, i << 4, i, 0);
   }
