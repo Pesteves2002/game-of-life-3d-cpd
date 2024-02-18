@@ -4,7 +4,7 @@ void simulation() {
   initializeLeaderboard();
 
   // generations start at 1
-  for (int i = 1; i < gen_num + 2; i++) {
+  for (int i = 1; i < gen_num + 1; i++) {
     clearCurrentLeaderboard();
 
     // debugPrintGrid(i % 2 == 0);
@@ -13,8 +13,6 @@ void simulation() {
 
     updateMaxLeaderboard(i);
   }
-
-  printLeaderboard();
 };
 
 void debugPrintGrid(bool even_gen) {
