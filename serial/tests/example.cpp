@@ -17,5 +17,6 @@ int main() {
 
   simulation();
 
+  std::cout << "Successful test" << std::endl;
   return 0;
 }

@@ -21,17 +21,6 @@ void fillGrid(int size, bool even_gen, char new_state) {
   }
 }
 
-void checkGrid(int size, int value, int left, int right) {
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
-      for (int k = 0; k < size; k++) {
-        assert(readCellState(i, j, k, false) == right);
-        assert(readCellState(i, j, k, true) == left);
-      }
-    }
-  }
-}
-
 void checkState(int size, bool even_gen, char expectedState) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
@@ -101,7 +90,6 @@ int main() {
   fillNcells(SIZE, 6, false, 1);
   countGrid(SIZE, true, 6, SIZE * SIZE * SIZE - 6);
 
-
   // 7 to 10 live cells (will be alive in the next generation)
   for (int i = 7; i < 11; i++) {
     fillNcells(SIZE, i, false, 1);
@@ -122,6 +110,8 @@ int main() {
     fillNcells(SIZE, i, false, 1);
     checkState(SIZE, false, 0);
   }
+
+  std::cout << "Successful test" << std::endl;
 
   return 0;
 }
