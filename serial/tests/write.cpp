@@ -4,10 +4,10 @@
 #include <bitset>
 #include <cassert>
 
-char ***grid;              // defined in simulation.h
-int gen_num;               // defined in simulation.h
-long long grid_size;       // defined in simulation.h
-long long leaderboard[20]; // defined in simulation.h
+char ***grid;                            // defined in simulation.h
+int gen_num;                             // defined in simulation.h
+long long grid_size;                     // defined in simulation.h
+long long leaderboard[LEADERBOARD_SIZE]; // defined in simulation.h
 
 long long SIZE = 3;
 
@@ -41,14 +41,14 @@ int main() {
 
   for (int i = 0; i < 16; i++) {
     fillGrid(SIZE, false, i);
-    checkGrid(SIZE, i, 0, i);
+    checkGrid(SIZE, i, i, 0);
   }
 
   fillGrid(SIZE, false, 0);
 
   for (int i = 0; i < 16; i++) {
     fillGrid(SIZE, true, i);
-    checkGrid(SIZE, i << 4, i, 0);
+    checkGrid(SIZE, i << 4, 0, i);
   }
 
   return 0;

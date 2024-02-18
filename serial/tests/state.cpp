@@ -4,10 +4,10 @@
 #include <bitset>
 #include <cassert>
 
-char ***grid;              // defined in simulation.h
-int gen_num;               // defined in simulation.h
-long long grid_size = 3;   // defined in simulation.h
-long long leaderboard[20]; // defined in simulation.h
+char ***grid;                            // defined in simulation.h
+int gen_num;                             // defined in simulation.h
+long long grid_size = 3;                 // defined in simulation.h
+long long leaderboard[LEADERBOARD_SIZE]; // defined in simulation.h
 
 long long SIZE = 3;
 
@@ -66,10 +66,9 @@ void countGrid(int size, bool even_gen, int alive, int dead) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        char state = even_gen ? readCellState(i, j, k, true)
-                              : readCellState(i, j, k, false);
+        char state = readCellState(i, j, k, even_gen);
         char newState = calculateNextState(i, j, k, state != 0, even_gen);
-        if (newState == 1) {
+        if (newState != 0) {
           count++;
         }
       }
@@ -100,22 +99,23 @@ int main() {
 
   // 6 live cells
   fillNcells(SIZE, 6, false, 1);
-  countGrid(SIZE, false, 6, SIZE * SIZE * SIZE - 6);
+  countGrid(SIZE, true, 6, SIZE * SIZE * SIZE - 6);
+
 
   // 7 to 10 live cells (will be alive in the next generation)
   for (int i = 7; i < 11; i++) {
     fillNcells(SIZE, i, false, 1);
-    countGrid(SIZE, false, SIZE * SIZE * SIZE, 0);
+    countGrid(SIZE, true, SIZE * SIZE * SIZE, 0);
   }
 
   // 11 to 13 live cells (nothing happens)
   for (int i = 11; i < 14; i++) {
     fillNcells(SIZE, i, false, 1);
-    countGrid(SIZE, false, i, SIZE * SIZE * SIZE - i);
+    countGrid(SIZE, true, i, SIZE * SIZE * SIZE - i);
   }
   // 14 live cells
   fillNcells(SIZE, 14, false, 1);
-  countGrid(SIZE, false, 14, SIZE * SIZE * SIZE - 14);
+  countGrid(SIZE, true, 14, SIZE * SIZE * SIZE - 14);
 
   // a live cell with more than 13 live neighbors dies
   for (int i = 15; i < SIZE * SIZE * SIZE; i++) {

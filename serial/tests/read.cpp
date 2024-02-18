@@ -4,10 +4,10 @@
 #include <bitset>
 #include <cassert>
 
-char ***grid;              // defined in simulation.h
-int gen_num;               // defined in simulation.h
-long long grid_size;       // defined in simulation.h
-long long leaderboard[20]; // defined in simulation.h
+char ***grid;                            // defined in simulation.h
+int gen_num;                             // defined in simulation.h
+long long grid_size;                     // defined in simulation.h
+long long leaderboard[LEADERBOARD_SIZE]; // defined in simulation.h
 
 long long SIZE = 3;
 
