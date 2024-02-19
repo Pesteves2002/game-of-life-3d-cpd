@@ -27,26 +27,6 @@ void simulation(Cell ****g, int genNum, int size) {
   }
 };
 
-void debugPrintGrid(bool even_gen) {
-  for (int x = 0; x < gridSize; x++) {
-    for (int y = 0; y < gridSize; y++) {
-      for (int z = 0; z < gridSize; z++) {
-        int valueToPrint = even_gen ? (int)grid[x][y][z].rightState
-                                    : (int)grid[x][y][z].leftState;
-        if (valueToPrint == 0) {
-          std::cout << "  ";
-        } else {
-          std::cout << valueToPrint << " ";
-        }
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-  }
-
-  std::cout << "---" << std::endl;
-};
-
 void updateGridState(bool even_gen) {
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
@@ -124,4 +104,24 @@ char getMostFrequentValue(char *neighborsValues) {
     }
   }
   return mostFrequentValue + 1;
+};
+
+void debugPrintGrid(bool even_gen) {
+  for (int x = 0; x < gridSize; x++) {
+    for (int y = 0; y < gridSize; y++) {
+      for (int z = 0; z < gridSize; z++) {
+        int valueToPrint = even_gen ? (int)grid[x][y][z].rightState
+                                    : (int)grid[x][y][z].leftState;
+        if (valueToPrint == 0) {
+          std::cout << "  ";
+        } else {
+          std::cout << valueToPrint << " ";
+        }
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  }
+
+  std::cout << "---" << std::endl;
 };
