@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
 
-const int LEADERBOARD_SIZE = 27;
+#include "leaderboard.h"
 
 extern char ***grid;
 
@@ -14,21 +14,9 @@ extern int gen_num;
 
 extern long long grid_size;
 
-extern long long leaderboard[LEADERBOARD_SIZE];
-
 void simulation();
 
 void debugPrintGrid(bool even_gen);
-
-void initializeLeaderboard();
-
-void clearCurrentLeaderboard();
-
-void updateMaxLeaderboard(int current_gen);
-
-void printLeaderboard();
-
-void writeToLeaderboard(char new_state);
 
 void updateGridState(bool even_gen);
 

@@ -34,12 +34,12 @@ CXXFLAGS += $(INCLUDES)
 
 all: $(TARGET_EXECS)
 
-life3d: utils.o simulation.o
+life3d: utils.o simulation.o leaderboard.o
 
-tests/read:  utils.o simulation.o
-tests/write: utils.o simulation.o
-tests/state: utils.o simulation.o
-tests/example: utils.o simulation.o
+tests/read:  utils.o simulation.o leaderboard.o
+tests/write: utils.o simulation.o leaderboard.o
+tests/state: utils.o simulation.o leaderboard.o
+tests/example: utils.o simulation.o leaderboard.o
 
 clean:
 	rm -f $(OBJECTS) $(TARGET_EXECS)

@@ -1,17 +1,18 @@
 #include "simulation.h"
 
 void simulation() {
-  initializeLeaderboard();
+  // TODO: read round 0
+  initLeaderboard();
 
   // generations start at 1
   for (int i = 1; i < gen_num + 1; i++) {
-    clearCurrentLeaderboard();
+    clearLeaderboard();
 
     // debugPrintGrid(i % 2 == 0);
 
     updateGridState(i % 2 == 0);
 
-    updateMaxLeaderboard(i);
+    updateMaxScores(i);
   }
 };
 
@@ -33,52 +34,6 @@ void debugPrintGrid(bool even_gen) {
   }
 
   std::cout << "---" << std::endl;
-};
-
-void initializeLeaderboard() {
-  for (int x = 0; x < grid_size; x++) {
-    for (int y = 0; y < grid_size; y++) {
-      for (int z = 0; z < grid_size; z++) {
-        int value = (int)readCellState(x, y, z, false);
-        if (value != 0) {
-          leaderboard[value - 1]++;
-        }
-      }
-    }
-  }
-  for (int i = 0; i < 9; i++) {
-    leaderboard[i + 9] = leaderboard[i];
-    leaderboard[i + 18] = 0;
-  }
-};
-
-void clearCurrentLeaderboard() {
-  for (int i = 0; i < 9; i++) {
-    leaderboard[i] = 0;
-  }
-};
-
-void updateMaxLeaderboard(int current_gen) {
-  for (int i = 0; i < 9; i++) {
-    if (leaderboard[i] > leaderboard[i + 9]) {
-      leaderboard[i + 9] = leaderboard[i];
-      leaderboard[i + 18] = current_gen;
-    }
-  }
-};
-
-void printLeaderboard() {
-  for (int i = 0; i < 9; i++) {
-    std::cout << i + 1 << " " << leaderboard[i + 9] << " "
-              << leaderboard[i + 18] << std::endl;
-  }
-};
-
-void writeToLeaderboard(int new_state) {
-  if (new_state == 0) {
-    return;
-  }
-  leaderboard[new_state - 1]++;
 };
 
 void updateGridState(bool even_gen) {
