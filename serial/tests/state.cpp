@@ -4,11 +4,8 @@
 #include <bitset>
 #include <cassert>
 
-char ***grid;            // defined in simulation.h
-int gen_num;             // defined in simulation.h
-long long grid_size = 3; // defined in simulation.h
-
-long long SIZE = 3;
+int SIZE = 3;
+char ***g;
 
 void fillGrid(int size, bool even_gen, char new_state) {
   for (int i = 0; i < size; i++) {
@@ -69,7 +66,7 @@ void countGrid(int size, bool even_gen, int alive, int dead) {
 int main() {
 
   // all grids are initialized to 0
-  grid = gen_initial_grid(SIZE, 0, 0);
+  g = gen_initial_grid(SIZE, 0, 0);
 
   // All cells are dead
   fillGrid(SIZE, false, 0);

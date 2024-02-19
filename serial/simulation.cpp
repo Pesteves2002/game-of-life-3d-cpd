@@ -1,11 +1,19 @@
 #include "simulation.h"
 
-void simulation() {
+char ***grid;
+int genNum;
+int gridSize;
+
+void simulation(char ****g, int num, int size) {
+  grid = *g;
+  genNum = num;
+  gridSize = size;
+
   // TODO: read round 0
   initLeaderboard();
 
   // generations start at 1
-  for (int i = 1; i < gen_num + 1; i++) {
+  for (int i = 1; i < genNum + 1; i++) {
     clearLeaderboard();
 
     // debugPrintGrid(i % 2 == 0);
@@ -17,9 +25,9 @@ void simulation() {
 };
 
 void debugPrintGrid(bool even_gen) {
-  for (int x = 0; x < grid_size; x++) {
-    for (int y = 0; y < grid_size; y++) {
-      for (int z = 0; z < grid_size; z++) {
+  for (int x = 0; x < gridSize; x++) {
+    for (int y = 0; y < gridSize; y++) {
+      for (int z = 0; z < gridSize; z++) {
         int valueToPrint = even_gen ? (int)((grid[x][y][z] >> 4) & 0x0F)
                                     : (int)((grid[x][y][z] & 0x0F));
         if (valueToPrint == 0) {
@@ -37,9 +45,9 @@ void debugPrintGrid(bool even_gen) {
 };
 
 void updateGridState(bool even_gen) {
-  for (int x = 0; x < grid_size; x++) {
-    for (int y = 0; y < grid_size; y++) {
-      for (int z = 0; z < grid_size; z++) {
+  for (int x = 0; x < gridSize; x++) {
+    for (int y = 0; y < gridSize; y++) {
+      for (int z = 0; z < gridSize; z++) {
         updateCellState(x, y, z, even_gen);
       }
     }
@@ -83,9 +91,9 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
           continue;
         }
 
-        char value = readCellState((x + i + grid_size) % grid_size,
-                                   (y + j + grid_size) % grid_size,
-                                   (z + k + grid_size) % grid_size, even_gen);
+        char value = readCellState((x + i + gridSize) % gridSize,
+                                   (y + j + gridSize) % gridSize,
+                                   (z + k + gridSize) % gridSize, even_gen);
 
         if (value != 0) {
           neighborsValues[value]++;

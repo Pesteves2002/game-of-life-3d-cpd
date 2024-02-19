@@ -8,13 +8,7 @@
 
 #include "leaderboard.h"
 
-extern char ***grid;
-
-extern int gen_num;
-
-extern long long grid_size;
-
-void simulation();
+void simulation(char ****grid, int gen_num, int grid_size);
 
 void debugPrintGrid(bool even_gen);
 
