@@ -1,5 +1,4 @@
 #include "simulation.h"
-#include "utils.h"
 
 Cell ***grid;
 int gridSize;
@@ -87,7 +86,7 @@ void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
 // wraps around the grid
 char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
   int aliveCounter = 0;
-  char neighborsValues[NUM_TYPE_ALIVE] = {0};
+  char neighborsValues[N_SPECIES] = {0};
   for (int i = -1; i < 2; i++) {
     for (int j = -1; j < 2; j++) {
       for (int k = -1; k < 2; k++) {
@@ -118,7 +117,7 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
 char getMostFrequentValue(char *neighborsValues) {
   char mostFrequentValue = 0;
   int maxCount = 0;
-  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
+  for (int i = 0; i < N_SPECIES; i++) {
     if (neighborsValues[i] > maxCount) {
       maxCount = neighborsValues[i];
       mostFrequentValue = i;

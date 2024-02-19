@@ -1,18 +1,18 @@
 #include "leaderboard.h"
 
-long long leaderboard[NUM_TYPE_ALIVE * 3] = {0}; // current, max, max gen
+long long leaderboard[N_SPECIES * 3] = {0}; // current, max, max gen
 
 void clearLeaderboard() {
-  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
+  for (int i = 0; i < N_SPECIES; i++) {
     leaderboard[i] = 0;
   }
 };
 
 void updateMaxScores(int current_gen) {
-  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
-    if (leaderboard[i] > leaderboard[i + NUM_TYPE_ALIVE]) {
-      leaderboard[i + NUM_TYPE_ALIVE] = leaderboard[i];
-      leaderboard[i + NUM_TYPE_ALIVE * 2] = current_gen;
+  for (int i = 0; i < N_SPECIES; i++) {
+    if (leaderboard[i] > leaderboard[i + N_SPECIES]) {
+      leaderboard[i + N_SPECIES] = leaderboard[i];
+      leaderboard[i + N_SPECIES * 2] = current_gen;
     }
   }
 };
@@ -25,8 +25,8 @@ void writeToLeaderboard(char new_state) {
 };
 
 void printLeaderboard() {
-  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
-    std::cout << i + 1 << " " << leaderboard[i + NUM_TYPE_ALIVE] << " "
-              << leaderboard[i + NUM_TYPE_ALIVE * 2] << std::endl;
+  for (int i = 0; i < N_SPECIES; i++) {
+    std::cout << i + 1 << " " << leaderboard[i + N_SPECIES] << " "
+              << leaderboard[i + N_SPECIES * 2] << std::endl;
   }
 };

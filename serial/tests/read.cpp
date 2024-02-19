@@ -1,6 +1,5 @@
 #include "../simulation.h"
 
-#include <bitset>
 #include <cassert>
 
 int SIZE = 3;

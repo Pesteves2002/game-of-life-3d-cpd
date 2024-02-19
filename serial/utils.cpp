@@ -1,7 +1,5 @@
 #include "utils.h"
 
-#define N_SPECIES 9
-
 unsigned int seed;
 
 void init_r4uni(int input_seed) { seed = input_seed + 987654321; }
