@@ -1,0 +1,14 @@
+name: CI
+on: push
+
+jobs:
+  compile-and-test:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Compile and Test
+        run: |
+          cd serial && \
+          nix develop --command \
+          make test
