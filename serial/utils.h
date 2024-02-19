@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#define NUM_TYPE_ALIVE (9)
+
 struct Cell {
   unsigned char leftState : 4;
   unsigned char rightState : 4;
