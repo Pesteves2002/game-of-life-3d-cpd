@@ -9,8 +9,17 @@ void simulation(char ****g, int num, int size) {
   genNum = num;
   gridSize = size;
 
-  // TODO: read round 0
   initLeaderboard();
+
+  for (int x = 0; x < gridSize; x++) {
+    for (int y = 0; y < gridSize; y++) {
+      for (int z = 0; z < gridSize; z++) {
+	writeToLeaderboard((int)readCellState(x, y, z, 0));
+      }
+    }
+  }
+
+  updateMaxScores(0);
 
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
