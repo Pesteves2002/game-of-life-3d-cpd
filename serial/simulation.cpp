@@ -1,20 +1,17 @@
 #include "simulation.h"
+#include "utils.h"
 
-char ***grid;
-int genNum;
+Cell ***grid;
 int gridSize;
 
-void simulation(char ****g, int num, int size) {
+void simulation(Cell ****g, int genNum, int size) {
   grid = *g;
-  genNum = num;
   gridSize = size;
-
-  initLeaderboard();
 
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
       for (int z = 0; z < gridSize; z++) {
-	writeToLeaderboard((int)readCellState(x, y, z, 0));
+        writeToLeaderboard(readCellState(x, y, z, 0));
       }
     }
   }
@@ -24,8 +21,6 @@ void simulation(char ****g, int num, int size) {
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
     clearLeaderboard();
-
-    // debugPrintGrid(i % 2 == 0);
 
     updateGridState(i % 2 == 0);
 
@@ -37,8 +32,8 @@ void debugPrintGrid(bool even_gen) {
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
       for (int z = 0; z < gridSize; z++) {
-        int valueToPrint = even_gen ? (int)((grid[x][y][z] >> 4) & 0x0F)
-                                    : (int)((grid[x][y][z] & 0x0F));
+        int valueToPrint = even_gen ? (int)grid[x][y][z].rightState
+                                    : (int)grid[x][y][z].leftState;
         if (valueToPrint == 0) {
           std::cout << "  ";
         } else {
@@ -71,21 +66,21 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 
   writeCellState(x, y, z, even_gen, new_state);
 
-  writeToLeaderboard((int)new_state);
+  writeToLeaderboard(new_state);
 };
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits
 char readCellState(int x, int y, int z, bool even_gen) {
-  return even_gen ? ((grid[x][y][z] >> 4) & 0x0F) : (grid[x][y][z] & 0x0F);
+  return even_gen ? grid[x][y][z].leftState : grid[x][y][z].rightState;
 };
 
 // odd states will write the upper 4 bits, even states will write the lower 4
 // bits
 void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
   if (even_gen) {
-    grid[x][y][z] = (grid[x][y][z] & 0xF0) | new_state;
+    grid[x][y][z].rightState = new_state;
   } else {
-    grid[x][y][z] = (grid[x][y][z] & 0x0F) | (new_state << 4);
+    grid[x][y][z].leftState = new_state;
   }
 };
 

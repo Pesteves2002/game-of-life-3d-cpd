@@ -7,8 +7,9 @@
 #include <map>
 
 #include "leaderboard.h"
+#include "utils.h"
 
-void simulation(char ****grid, int gen_num, int grid_size);
+void simulation(Cell ****grid, int gen_num, int grid_size);
 
 void debugPrintGrid(bool even_gen);
 

@@ -1,7 +1,4 @@
 #include "simulation.h"
-#include "utils.h"
-#include <cstdio>
-#include <cstdlib>
 #include <omp.h>
 
 int main(int argc, char *argv[]) {
@@ -19,7 +16,7 @@ int main(int argc, char *argv[]) {
   int input_seed = atoi(argv[4]);
 
   double exec_time;
-  char ***g = gen_initial_grid(grid_size, density, input_seed);
+  Cell ***g = gen_initial_grid(grid_size, density, input_seed);
   exec_time = -omp_get_wtime();
 
   simulation(&g, gen_num, grid_size);

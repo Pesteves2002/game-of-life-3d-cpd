@@ -4,6 +4,11 @@
 #include <cstdio>
 #include <cstdlib>
 
-char ***gen_initial_grid(long long cells_per_side, float density, int seed);
+struct Cell {
+  unsigned char leftState : 4;
+  unsigned char rightState : 4;
+};
+
+Cell ***gen_initial_grid(long long cells_per_side, float density, int seed);
 
 #endif // UTILS_H

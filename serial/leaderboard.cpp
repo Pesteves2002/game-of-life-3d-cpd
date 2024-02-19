@@ -1,30 +1,23 @@
 #include "leaderboard.h"
 
-long long leaderboard[NUM_TYPE_ALIVE * 3] = {0};
-
-void initLeaderboard() {
-  for (int i = 0; i < 9; i++) {
-    leaderboard[i + 9] = leaderboard[i];
-    leaderboard[i + 18] = 0;
-  }
-};
+long long leaderboard[NUM_TYPE_ALIVE * 3] = {0}; // current, max, max gen
 
 void clearLeaderboard() {
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
     leaderboard[i] = 0;
   }
 };
 
 void updateMaxScores(int current_gen) {
-  for (int i = 0; i < 9; i++) {
-    if (leaderboard[i] > leaderboard[i + 9]) {
-      leaderboard[i + 9] = leaderboard[i];
-      leaderboard[i + 18] = current_gen;
+  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
+    if (leaderboard[i] > leaderboard[i + NUM_TYPE_ALIVE]) {
+      leaderboard[i + NUM_TYPE_ALIVE] = leaderboard[i];
+      leaderboard[i + NUM_TYPE_ALIVE * 2] = current_gen;
     }
   }
 };
 
-void writeToLeaderboard(int new_state) {
+void writeToLeaderboard(char new_state) {
   if (new_state == 0) {
     return;
   }
@@ -32,8 +25,8 @@ void writeToLeaderboard(int new_state) {
 };
 
 void printLeaderboard() {
-  for (int i = 0; i < 9; i++) {
-    std::cout << i + 1 << " " << leaderboard[i + 9] << " "
-              << leaderboard[i + 18] << std::endl;
+  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
+    std::cout << i + 1 << " " << leaderboard[i + NUM_TYPE_ALIVE] << " "
+              << leaderboard[i + NUM_TYPE_ALIVE * 2] << std::endl;
   }
 };

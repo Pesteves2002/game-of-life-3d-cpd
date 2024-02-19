@@ -16,21 +16,21 @@ float r4_uni() {
   return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
 }
 
-char ***gen_initial_grid(long long N, float density, int input_seed) {
+Cell ***gen_initial_grid(long long N, float density, int input_seed) {
   int x, y, z;
 
-  char ***grid = (char ***)malloc(N * sizeof(char **));
+  Cell ***grid = (Cell ***)malloc(N * sizeof(Cell **));
   if (grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
   }
   for (x = 0; x < N; x++) {
-    grid[x] = (char **)malloc(N * sizeof(char *));
+    grid[x] = (Cell **)malloc(N * sizeof(Cell *));
     if (grid[x] == NULL) {
       printf("Failed to allocate matrix\n");
       exit(1);
     }
-    grid[x][0] = (char *)calloc(N * N, sizeof(char));
+    grid[x][0] = (Cell *)calloc(N * N, sizeof(Cell));
     if (grid[x][0] == NULL) {
       printf("Failed to allocate matrix\n");
       exit(1);
@@ -44,7 +44,7 @@ char ***gen_initial_grid(long long N, float density, int input_seed) {
     for (y = 0; y < N; y++)
       for (z = 0; z < N; z++)
         if (r4_uni() < density)
-          grid[x][y][z] = (int)(r4_uni() * N_SPECIES) + 1;
+          grid[x][y][z].rightState = (int)(r4_uni() * N_SPECIES) + 1;
 
   return grid;
 }

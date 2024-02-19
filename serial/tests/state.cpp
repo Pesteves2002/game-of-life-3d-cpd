@@ -1,11 +1,10 @@
 #include "../simulation.h"
 #include "../utils.h"
 
-#include <bitset>
 #include <cassert>
 
 int SIZE = 3;
-char ***g;
+Cell ***g;
 
 void fillGrid(int size, bool even_gen, char new_state) {
   for (int i = 0; i < size; i++) {
@@ -67,6 +66,8 @@ int main() {
 
   // all grids are initialized to 0
   g = gen_initial_grid(SIZE, 0, 0);
+
+  simulation(&g, 0, SIZE);
 
   // All cells are dead
   fillGrid(SIZE, false, 0);

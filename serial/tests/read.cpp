@@ -1,17 +1,20 @@
 #include "../simulation.h"
-#include "../utils.h"
 
 #include <bitset>
 #include <cassert>
 
 int SIZE = 3;
-char ***g;
+Cell ***g;
 
-void fillGrid(int size, int value) {
+void fillGrid(int size, int value, bool even) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        g[i][j][k] = value;
+        if (even) {
+          g[i][j][k].leftState = value;
+        } else {
+          g[i][j][k].rightState = value;
+        }
       }
     }
   }
@@ -33,15 +36,23 @@ int main() {
   // all grids are initialized to 0
   g = gen_initial_grid(SIZE, 0, 0);
 
+  simulation(&g, 0, SIZE);
+
+  fillGrid(SIZE, 0, false);
+  fillGrid(SIZE, 0, true);
   checkGrid(SIZE, 0, 0);
 
+  // read left cell
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, i);
+    fillGrid(SIZE, i, false);
     checkGrid(SIZE, 0, i);
   }
 
+  fillGrid(SIZE, 0, false);
+  fillGrid(SIZE, 0, true);
+
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, i << 4);
+    fillGrid(SIZE, i, true);
     checkGrid(SIZE, i, 0);
   }
 

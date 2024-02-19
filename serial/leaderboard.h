@@ -11,7 +11,7 @@ void clearLeaderboard();
 
 void updateMaxScores(int currentGen);
 
-void writeToLeaderboard(int state);
+void writeToLeaderboard(char state);
 
 void printLeaderboard();
 
