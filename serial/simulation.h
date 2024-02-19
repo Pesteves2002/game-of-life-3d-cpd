@@ -1,10 +1,8 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <map>
 
 #include "leaderboard.h"
 #include "utils.h"
@@ -23,6 +21,6 @@ char readCellState(int i, int j, int k, bool even_gen);
 
 void writeCellState(int i, int j, int k, bool even_gen, char new_state);
 
-char getMostFrequentValue(std::map<char, int> neighborsValues);
+char getMostFrequentValue(char *neighborsValues);
 
 #endif // SIMULATION_H

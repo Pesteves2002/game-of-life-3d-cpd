@@ -23,7 +23,7 @@ CXXFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-d
 # warning suppressions
 CXXFLAGS += -Wno-sign-compare
 
-# CXFLAGS += -g
+#CXXFLAGS += -g
 CXXFLAGS += -O3 -std=c++17
 CXXFLAGS += $(INCLUDES)
 

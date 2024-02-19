@@ -87,16 +87,16 @@ void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
 // wraps around the grid
 char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
   int aliveCounter = 0;
-  std::map<char, int> neighborsValues;
+  char neighborsValues[NUM_TYPE_ALIVE] = {0};
   for (int i = -1; i < 2; i++) {
     for (int j = -1; j < 2; j++) {
       for (int k = -1; k < 2; k++) {
-        char value = readCellState((x + i + gridSize) % gridSize,
-                                   (y + j + gridSize) % gridSize,
-                                   (z + k + gridSize) % gridSize, even_gen);
+        unsigned char value = readCellState(
+            (x + i + gridSize) % gridSize, (y + j + gridSize) % gridSize,
+            (z + k + gridSize) % gridSize, even_gen);
 
         if (value != 0) {
-          neighborsValues[value]++;
+          neighborsValues[value - 1]++;
           aliveCounter++;
         }
       }
@@ -115,14 +115,14 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
              : readCellState(x, y, z, even_gen);
 };
 
-char getMostFrequentValue(std::map<char, int> neighborsValues) {
+char getMostFrequentValue(char *neighborsValues) {
   char mostFrequentValue = 0;
   int maxCount = 0;
-  for (auto const &pair : neighborsValues) {
-    if (pair.second > maxCount) {
-      maxCount = pair.second;
-      mostFrequentValue = pair.first;
+  for (int i = 0; i < NUM_TYPE_ALIVE; i++) {
+    if (neighborsValues[i] > maxCount) {
+      maxCount = neighborsValues[i];
+      mostFrequentValue = i;
     }
   }
-  return mostFrequentValue;
+  return mostFrequentValue + 1;
 };
