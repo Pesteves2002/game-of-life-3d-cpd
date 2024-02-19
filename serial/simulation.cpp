@@ -91,10 +91,6 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
   for (int i = -1; i < 2; i++) {
     for (int j = -1; j < 2; j++) {
       for (int k = -1; k < 2; k++) {
-        if (i == 0 && j == 0 && k == 0) {
-          continue;
-        }
-
         char value = readCellState((x + i + gridSize) % gridSize,
                                    (y + j + gridSize) % gridSize,
                                    (z + k + gridSize) % gridSize, even_gen);
@@ -111,11 +107,12 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
                ? getMostFrequentValue(neighborsValues)
                : 0;
 
-  if (aliveCounter <= 4 || aliveCounter > 13) {
-    return 0;
-  }
-
-  return readCellState(x, y, z, even_gen);
+  // since the cell is alive, it will count itself
+  // we will need to subtract 1 from the aliveCounter
+  aliveCounter--;
+  return (aliveCounter <= 4 || aliveCounter > 13)
+             ? 0
+             : readCellState(x, y, z, even_gen);
 };
 
 char getMostFrequentValue(std::map<char, int> neighborsValues) {
