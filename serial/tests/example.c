@@ -1,4 +1,5 @@
 #include "../simulation.h"
+#include <stdio.h>
 
 int SIZE = 4;
 int GENS = 4;
@@ -9,6 +10,6 @@ int main() {
 
   simulation(&g, GENS, SIZE);
 
-  std::cout << "Successful test" << std::endl;
+  fprintf(stdout, "Successful test\n");
   return 0;
 }

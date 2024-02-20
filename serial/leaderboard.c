@@ -1,4 +1,5 @@
 #include "leaderboard.h"
+#include <stdio.h>
 
 long long leaderboard[N_SPECIES * 3] = {0}; // current, max, max gen
 
@@ -26,7 +27,6 @@ void writeToLeaderboard(char new_state) {
 
 void printLeaderboard() {
   for (int i = 0; i < N_SPECIES; i++) {
-    std::cout << i + 1 << " " << leaderboard[i + N_SPECIES] << " "
-              << leaderboard[i + N_SPECIES * 2] << std::endl;
+      fprintf(stdout, "%d %lld %lld\n", i + 1, leaderboard[i + N_SPECIES], leaderboard[i + N_SPECIES * 2]);
   }
 };

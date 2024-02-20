@@ -1,6 +1,6 @@
 #include "../simulation.h"
-
-#include <cassert>
+#include <assert.h>
+#include <stdio.h>
 
 int SIZE = 3;
 Cell ***g;
@@ -55,7 +55,7 @@ int main() {
     checkGrid(SIZE, i, 0);
   }
 
-  std::cout << "Successful test" << std::endl;
+  fprintf(stdout, "Successful test\n");
 
   return 0;
 }

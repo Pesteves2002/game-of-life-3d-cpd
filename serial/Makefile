@@ -1,14 +1,14 @@
-CC = g++
-LD = g++
+CC = gcc
+LD = gcc
 
 INCLUDE_DIRS := .
 INCLUDES = $(addprefix -I, $(INCLUDE_DIRS))
 
-SOURCES := $(wildcard *.cpp)
-SOURCES += $(wildcard */*.cpp)
+SOURCES := $(wildcard *.c)
+SOURCES += $(wildcard */*.c)
 HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
-OBJECTS  := $(SOURCES:.cpp=.o)
+OBJECTS  := $(SOURCES:.c=.o)
 TARGET_EXECS := life3d
 TARGET_EXECS += tests/read tests/write tests/state tests/example
 
@@ -16,19 +16,19 @@ TARGET_EXECS += tests/read tests/write tests/state tests/example
 # vpath %.h <DIR> tells make to look for header files in <DIR>
 vpath %.h $(INCLUDE_DIRS)
 
-CXXFLAGS := -fopenmp
+CFLAGS := -fopenmp
 LDFLAGS := -fopenmp
 
-CXXFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
+CFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 # warning suppressions
-CXXFLAGS += -Wno-sign-compare
+CFLAGS += -Wno-sign-compare
 
-#CXXFLAGS += -g
-CXXFLAGS += -O3 -std=c++17
-CXXFLAGS += $(INCLUDES)
+#CFLAGS += -g
+CFLAGS += -O3 -std=c17
+CFLAGS += $(INCLUDES)
 
 # conversion warnings
-# CXXFLAGS += -Wconversion -Wsign-conversion
+# CFLAGS += -Wconversion -Wsign-conversion
 
 .PHONY: all clean fmt test
 

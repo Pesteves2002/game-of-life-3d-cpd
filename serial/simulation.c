@@ -1,4 +1,5 @@
 #include "simulation.h"
+#include <stdio.h>
 
 Cell ***grid;
 int gridSize;
@@ -113,15 +114,17 @@ void debugPrintGrid(bool even_gen) {
         int valueToPrint = even_gen ? (int)grid[x][y][z].rightState
                                     : (int)grid[x][y][z].leftState;
         if (valueToPrint == 0) {
-          std::cout << "  ";
+            fprintf(stdout, "  ");
         } else {
-          std::cout << valueToPrint << " ";
+            fprintf(stdout, "%d ", valueToPrint);
         }
       }
-      std::cout << std::endl;
+
+      fprintf(stdout, "\n");
     }
-    std::cout << std::endl;
+
+    fprintf(stdout, "\n");
   }
 
-  std::cout << "---" << std::endl;
+  fprintf(stdout, "---\n");
 };
