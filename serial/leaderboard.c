@@ -1,5 +1,4 @@
 #include "leaderboard.h"
-#include <stdio.h>
 
 long long leaderboard[N_SPECIES * 3] = {0}; // current, max, max gen
 

@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 int SIZE = 3;
-Cell ***g;
+Cube *c;
 
 void fillGrid(int size, bool even_gen, char new_state) {
   for (int i = 0; i < size; i++) {
@@ -31,9 +31,9 @@ void checkGrid(int size, int left, int right) {
 int main() {
 
   // all grids are initialized to 0
-  g = gen_initial_grid(SIZE, 0, 0);
+  c = gen_initial_grid(SIZE, 0, 0);
 
-  simulation(&g, 0, SIZE);
+  simulation(c, 0, SIZE);
 
   fillGrid(SIZE, false, 0);
   fillGrid(SIZE, true, 0);
