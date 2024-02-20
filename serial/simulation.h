@@ -4,9 +4,8 @@
 #include "leaderboard.h"
 #include "utils.h"
 #include <stdbool.h>
-#include <stdio.h>
 
-void simulation(Cell ****grid, int gen_num, int grid_size);
+void simulation(Cube *c, int gen_num, int grid_size);
 
 void debugPrintGrid(bool even_gen);
 

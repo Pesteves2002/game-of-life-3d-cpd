@@ -1,6 +1,4 @@
 #include "utils.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 unsigned int seed;
 
@@ -16,35 +14,24 @@ float r4_uni() {
   return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
 }
 
-Cell ***gen_initial_grid(long long N, float density, int input_seed) {
-  int x, y, z;
-
-  Cell ***grid = (Cell ***)malloc(N * sizeof(Cell **));
-  if (grid == NULL) {
+Cube *gen_initial_grid(long long N, float density, int input_seed) {
+  Cube *cube = (Cube *)malloc(sizeof(Cube));
+  if (cube == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
   }
-  for (x = 0; x < N; x++) {
-    grid[x] = (Cell **)malloc(N * sizeof(Cell *));
-    if (grid[x] == NULL) {
-      printf("Failed to allocate matrix\n");
-      exit(1);
-    }
-    grid[x][0] = (Cell *)calloc(N * N, sizeof(Cell));
-    if (grid[x][0] == NULL) {
-      printf("Failed to allocate matrix\n");
-      exit(1);
-    }
-    for (y = 1; y < N; y++)
-      grid[x][y] = grid[x][0] + y * N;
+
+  cube->side_size = N;
+  cube->grid = (Cell *)malloc(N * N * N * sizeof(Cell));
+  if (cube->grid == NULL) {
+    printf("Failed to allocate matrix\n");
+    exit(1);
   }
 
   init_r4uni(input_seed);
-  for (x = 0; x < N; x++)
-    for (y = 0; y < N; y++)
-      for (z = 0; z < N; z++)
-        if (r4_uni() < density)
-          grid[x][y][z].rightState = (int)(r4_uni() * N_SPECIES) + 1;
+  for (unsigned long long x = 0; x < N * N * N; x++)
+    if (r4_uni() < density)
+      cube->grid[x].rightState = (int)(r4_uni() * N_SPECIES) + 1;
 
-  return grid;
+  return cube;
 }

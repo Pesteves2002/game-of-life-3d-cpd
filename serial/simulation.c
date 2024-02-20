@@ -1,11 +1,10 @@
 #include "simulation.h"
-#include <stdio.h>
 
-Cell ***grid;
+Cube *cube;
 int gridSize;
 
-void simulation(Cell ****g, int genNum, int size) {
-  grid = *g;
+void simulation(Cube *c, int genNum, int size) {
+  cube = c;
   gridSize = size;
 
   for (int x = 0; x < gridSize; x++) {
@@ -51,16 +50,17 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits
 char readCellState(int x, int y, int z, bool even_gen) {
-  return even_gen ? grid[x][y][z].leftState : grid[x][y][z].rightState;
+  return even_gen ? GET_CELL(cube, x, y, z).leftState
+                  : GET_CELL(cube, x, y, z).rightState;
 };
 
 // odd states will write the upper 4 bits, even states will write the lower 4
 // bits
 void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
   if (even_gen) {
-    grid[x][y][z].rightState = new_state;
+    SET_CELL_RIGHT_STATE(cube, x, y, z, new_state);
   } else {
-    grid[x][y][z].leftState = new_state;
+    SET_CELL_LEFT_STATE(cube, x, y, z, new_state);
   }
 };
 
@@ -111,12 +111,12 @@ void debugPrintGrid(bool even_gen) {
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
       for (int z = 0; z < gridSize; z++) {
-        int valueToPrint = even_gen ? (int)grid[x][y][z].rightState
-                                    : (int)grid[x][y][z].leftState;
+        int valueToPrint = even_gen ? (int)GET_CELL(cube, x, y, z).rightState
+                                    : (int)GET_CELL(cube, x, y, z).leftState;
         if (valueToPrint == 0) {
-            fprintf(stdout, "  ");
+          fprintf(stdout, "  ");
         } else {
-            fprintf(stdout, "%d ", valueToPrint);
+          fprintf(stdout, "%d ", valueToPrint);
         }
       }
 

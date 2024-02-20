@@ -2,7 +2,6 @@
 #define __LEADERBOARD_H__
 
 #include "utils.h"
-#include <stdio.h>
 
 void initLeaderboard();
 

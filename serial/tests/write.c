@@ -1,8 +1,8 @@
 #include "../simulation.h"
 #include "../utils.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 int SIZE = 3;
 Cell ***g;
