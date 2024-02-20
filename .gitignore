@@ -30,4 +30,10 @@
 *.exe
 *.out
 *.app
+
 serial/life3d
+
+serial/tests/example
+serial/tests/read
+serial/tests/state
+serial/tests/write

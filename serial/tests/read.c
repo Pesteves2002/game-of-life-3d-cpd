@@ -1,16 +1,18 @@
 #include "../simulation.h"
-#include "../utils.h"
-
-#include <cassert>
+#include <assert.h>
 
 int SIZE = 3;
-Cell ***g;
+Cube * c;
 
-void fillGrid(int size, bool even_gen, char new_state) {
+void fillGrid(int size, int value, bool even) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        writeCellState(i, j, k, even_gen, new_state);
+        if (even) {
+	SET_CELL_LEFT_STATE(c, i,j,k,value);
+        } else {
+	SET_CELL_RIGHT_STATE(c, i,j,k,value);
+        }
       }
     }
   }
@@ -30,28 +32,29 @@ void checkGrid(int size, int left, int right) {
 int main() {
 
   // all grids are initialized to 0
-  g = gen_initial_grid(SIZE, 0, 0);
+  c = gen_initial_grid(SIZE, 0, 0);
 
-  simulation(&g, 0, SIZE);
+  simulation(c, 0, SIZE);
 
-  fillGrid(SIZE, false, 0);
-  fillGrid(SIZE, true, 0);
+  fillGrid(SIZE, 0, false);
+  fillGrid(SIZE, 0, true);
   checkGrid(SIZE, 0, 0);
 
+  // read left cell
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, false, i);
-    checkGrid(SIZE, i, 0);
-  }
-
-  fillGrid(SIZE, false, 0);
-  fillGrid(SIZE, true, 0);
-
-  for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, true, i);
+    fillGrid(SIZE, i, false);
     checkGrid(SIZE, 0, i);
   }
 
-  std::cout << "Successful test" << std::endl;
+  fillGrid(SIZE, 0, false);
+  fillGrid(SIZE, 0, true);
+
+  for (int i = 0; i < 16; i++) {
+    fillGrid(SIZE, i, true);
+    checkGrid(SIZE, i, 0);
+  }
+
+  fprintf(stdout, "Successful test\n");
 
   return 0;
 }

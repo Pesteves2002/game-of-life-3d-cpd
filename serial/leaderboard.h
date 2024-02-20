@@ -3,8 +3,6 @@
 
 #include "utils.h"
 
-#include <iostream>
-
 void initLeaderboard();
 
 void clearLeaderboard();
