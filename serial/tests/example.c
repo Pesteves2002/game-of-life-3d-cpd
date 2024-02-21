@@ -5,7 +5,7 @@ int GENS = 4;
 
 int main() {
 
-  Cube* cube = gen_initial_grid(SIZE, 0.4, 100);
+  Cube *cube = gen_initial_grid(SIZE, 0.4, 100);
 
   simulation(cube, GENS, SIZE);
 

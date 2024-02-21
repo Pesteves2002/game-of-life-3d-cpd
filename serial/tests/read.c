@@ -2,16 +2,16 @@
 #include <assert.h>
 
 int SIZE = 3;
-Cube * c;
+Cube *c;
 
 void fillGrid(int size, int value, bool even) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
         if (even) {
-	SET_CELL_LEFT_STATE(c, i,j,k,value);
+          SET_CELL_LEFT_STATE(c, i, j, k, value);
         } else {
-	SET_CELL_RIGHT_STATE(c, i,j,k,value);
+          SET_CELL_RIGHT_STATE(c, i, j, k, value);
         }
       }
     }

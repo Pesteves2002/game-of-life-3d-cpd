@@ -39,9 +39,10 @@ void updateGridState(bool even_gen) {
 
 void updateCellState(int x, int y, int z, bool even_gen) {
 
-  char current_state = readCellState(x, y, z, even_gen);
+  unsigned char current_state = readCellState(x, y, z, even_gen);
 
-  char new_state = calculateNextState(x, y, z, current_state != 0, even_gen);
+  unsigned char new_state =
+      calculateNextState(x, y, z, current_state != 0, even_gen);
 
   writeCellState(x, y, z, even_gen, new_state);
 
@@ -49,14 +50,15 @@ void updateCellState(int x, int y, int z, bool even_gen) {
 };
 
 // odd states will read the lower 4 bits, even states will read the upper 4 bits
-char readCellState(int x, int y, int z, bool even_gen) {
+unsigned char readCellState(int x, int y, int z, bool even_gen) {
   return even_gen ? GET_CELL(cube, x, y, z).leftState
                   : GET_CELL(cube, x, y, z).rightState;
 };
 
 // odd states will write the upper 4 bits, even states will write the lower 4
 // bits
-void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
+void writeCellState(int x, int y, int z, bool even_gen,
+                    unsigned char new_state) {
   if (even_gen) {
     SET_CELL_RIGHT_STATE(cube, x, y, z, new_state);
   } else {
@@ -65,15 +67,17 @@ void writeCellState(int x, int y, int z, bool even_gen, char new_state) {
 };
 
 // wraps around the grid
-char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
+unsigned char calculateNextState(int x, int y, int z, bool alive,
+                                 bool even_gen) {
   int aliveCounter = 0;
-  char neighborsValues[N_SPECIES] = {0};
+  unsigned char neighborsValues[N_SPECIES] = {0};
   for (int i = -1; i < 2; i++) {
+    int x_ = (x + i + gridSize) % gridSize;
     for (int j = -1; j < 2; j++) {
+      int y_ = (y + j + gridSize) % gridSize;
       for (int k = -1; k < 2; k++) {
-        unsigned char value = readCellState(
-            (x + i + gridSize) % gridSize, (y + j + gridSize) % gridSize,
-            (z + k + gridSize) % gridSize, even_gen);
+        int z_ = (z + k + gridSize) % gridSize;
+        unsigned char value = readCellState(x_, y_, z_, even_gen);
 
         if (value != 0) {
           neighborsValues[value - 1]++;
@@ -95,8 +99,8 @@ char calculateNextState(int x, int y, int z, bool alive, bool even_gen) {
              : readCellState(x, y, z, even_gen);
 };
 
-char getMostFrequentValue(char *neighborsValues) {
-  char mostFrequentValue = 0;
+unsigned char getMostFrequentValue(unsigned char *neighborsValues) {
+  unsigned char mostFrequentValue = 0;
   int maxCount = 0;
   for (int i = 0; i < N_SPECIES; i++) {
     if (neighborsValues[i] > maxCount) {
