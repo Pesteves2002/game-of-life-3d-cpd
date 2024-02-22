@@ -30,8 +30,8 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
   init_r4uni(input_seed);
   for (unsigned long long x = 0; x < N * N * N; x++)
-    if (r4_uni() < density)
-      cube->grid[x].rightState = (int)(r4_uni() * N_SPECIES) + 1;
+    cube->grid[x].rightState =
+        r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
 
   return cube;
 }
