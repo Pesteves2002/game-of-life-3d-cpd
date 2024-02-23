@@ -24,7 +24,7 @@ CFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-der
 CFLAGS += -Wno-sign-compare
 
 #CFLAGS += -g
-CFLAGS += -O3 -std=c17
+CFLAGS += -Ofast -std=c17
 CFLAGS += $(INCLUDES)
 
 # conversion warnings

@@ -71,12 +71,12 @@ unsigned char calculateNextState(int x, int y, int z, bool alive,
                                  bool even_gen) {
   int aliveCounter = 0;
   unsigned char neighborsValues[N_SPECIES] = {0};
-  for (int i = -1; i < 2; i++) {
-    int x_ = (x + i + gridSize) % gridSize;
-    for (int j = -1; j < 2; j++) {
+  for (int k = -1; k <= 1; k++) {
+    int z_ = (z + k + gridSize) % gridSize;
+    for (int j = -1; j <= 1; j++) {
       int y_ = (y + j + gridSize) % gridSize;
-      for (int k = -1; k < 2; k++) {
-        int z_ = (z + k + gridSize) % gridSize;
+      for (int i = -1; i <= 1; i++) {
+        int x_ = (x + i + gridSize) % gridSize;
         unsigned char value = readCellState(x_, y_, z_, even_gen);
 
         if (value != 0) {
