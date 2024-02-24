@@ -9,6 +9,7 @@
 typedef struct {
   unsigned char leftState : 4;
   unsigned char rightState : 4;
+  unsigned char neighborCount : 5;
 } Cell;
 
 typedef struct {

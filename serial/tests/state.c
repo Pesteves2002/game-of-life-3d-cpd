@@ -8,10 +8,20 @@ int SIZE = 3;
 Cube *c;
 
 void fillGrid(int size, bool even_gen, char new_state) {
+  // Reset the neighbors firts
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        writeCellState(i, j, k, even_gen, new_state);
+        GET_CELL(c, i, j, k).neighborCount = 0;
+      }
+    }
+  }
+
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      for (int k = 0; k < size; k++) {
+        writeCellState(i, j, k, even_gen, readCellState(i, j, k, even_gen),
+                       new_state);
       }
     }
   }
@@ -21,8 +31,7 @@ void checkState(int size, bool even_gen, char expectedState) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        char state = even_gen ? readCellState(i, j, k, true)
-                              : readCellState(i, j, k, false);
+        char state = readCellState(i, j, k, even_gen);
         char newState = calculateNextState(i, j, k, state != 0, even_gen);
         assert(expectedState == newState);
       }
@@ -39,7 +48,8 @@ void fillNcells(int size, int n, bool even_gen, char new_state) {
         if (count == n) {
           return;
         }
-        writeCellState(i, j, k, even_gen, new_state);
+        writeCellState(i, j, k, even_gen, readCellState(i, j, k, even_gen),
+                       new_state);
         count++;
       }
     }

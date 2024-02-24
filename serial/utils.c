@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdbool.h>
 
 unsigned int seed;
 
