@@ -27,23 +27,6 @@ void simulation(Cube *c, int genNum, int size) {
   }
 };
 
-void updateNeighborsCount(int x, int y, int z, unsigned char value) {
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + cube->side_size) % cube->side_size;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + cube->side_size) % cube->side_size;
-      for (int i = -1; i <= 1; i++) {
-        int x_ = (x + i + cube->side_size) % cube->side_size;
-        if (i == 0 && j == 0 && k == 0) {
-          continue;
-        }
-
-        GET_CELL(cube, x_, y_, z_).neighborCount += value;
-      }
-    }
-  }
-};
-
 void updateGridState(bool even_gen) {
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
@@ -74,8 +57,8 @@ unsigned char readCellState(int x, int y, int z, bool even_gen) {
 
 // odd states will write the upper 4 bits, even states will write the lower 4
 // bits
-void writeCellState(int x, int y, int z, bool even_gen,
-                    unsigned char old_state, unsigned char new_state) {
+void writeCellState(int x, int y, int z, bool even_gen, unsigned char old_state,
+                    unsigned char new_state) {
   if (even_gen) {
     SET_CELL_RIGHT_STATE(cube, x, y, z, new_state);
   } else {
@@ -83,7 +66,7 @@ void writeCellState(int x, int y, int z, bool even_gen,
   }
 
   if (old_state != new_state) {
-    updateNeighborsCount(x, y, z, new_state == 0 ? -1 : 1);
+    updateNeighborsCount(cube, x, y, z, even_gen, new_state == 0 ? -1 : 1);
   }
 };
 
@@ -91,8 +74,20 @@ void writeCellState(int x, int y, int z, bool even_gen,
 unsigned char calculateNextState(int x, int y, int z, bool alive,
                                  bool even_gen) {
   Cell *cell = &GET_CELL(cube, x, y, z);
+
+  if (cell->lastModifiedEven != even_gen) {
+    cell->lastModifiedEven = even_gen;
+    if (even_gen) {
+      cell->rightNeighbourCount = cell->leftNeighbourCount;
+    } else {
+      cell->leftNeighbourCount = cell->rightNeighbourCount;
+    }
+  }
+
+  unsigned char neighbourCount =
+      even_gen ? cell->leftNeighbourCount : cell->rightNeighbourCount;
   if (!alive) {
-    if (cell->neighborCount >= 7 && cell->neighborCount <= 10) {
+    if (neighbourCount >= 7 && neighbourCount <= 10) {
       unsigned char neighborsValues[N_SPECIES] = {0};
       getNeighborsValue(x, y, z, even_gen, neighborsValues);
       return getMostFrequentValue(neighborsValues);
@@ -101,9 +96,9 @@ unsigned char calculateNextState(int x, int y, int z, bool alive,
     return 0;
   }
 
-  return (cell->neighborCount <= 4 || cell->neighborCount > 13)
-             ? 0
-             : readCellState(x, y, z, even_gen);
+  return (neighbourCount <= 4 || neighbourCount > 13) ? 0
+         : even_gen                                   ? cell->leftState
+                                                      : cell->rightState;
 };
 
 void getNeighborsValue(int x, int y, int z, bool even_gen,
@@ -113,6 +108,9 @@ void getNeighborsValue(int x, int y, int z, bool even_gen,
     for (int j = -1; j <= 1; j++) {
       int y_ = (y + j + gridSize) % gridSize;
       for (int i = -1; i <= 1; i++) {
+        if (i == 0 && j == 0 && k == 0) {
+          continue;
+        }
         int x_ = (x + i + gridSize) % gridSize;
         unsigned char value = readCellState(x_, y_, z_, even_gen);
 
@@ -137,9 +135,9 @@ unsigned char getMostFrequentValue(unsigned char *neighborsValues) {
 };
 
 void debugPrintGrid(bool even_gen) {
-  for (int x = 0; x < gridSize; x++) {
+  for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
-      for (int z = 0; z < gridSize; z++) {
+      for (int x = 0; x < gridSize; x++) {
         int valueToPrint = even_gen ? (int)GET_CELL(cube, x, y, z).rightState
                                     : (int)GET_CELL(cube, x, y, z).leftState;
         if (valueToPrint == 0) {

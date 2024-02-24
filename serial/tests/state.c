@@ -12,7 +12,8 @@ void fillGrid(int size, bool even_gen, char new_state) {
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
-        GET_CELL(c, i, j, k).neighborCount = 0;
+        GET_CELL(c, i, j, k).leftNeighbourCount = 0;
+        GET_CELL(c, i, j, k).rightNeighbourCount = 0;
       }
     }
   }
