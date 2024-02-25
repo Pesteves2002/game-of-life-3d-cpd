@@ -24,6 +24,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
   cube->side_size = N;
   cube->grid = (Cell *)calloc(N * N * N, sizeof(Cell));
+  cube->cache = (Cache *)calloc(N * N * N, sizeof(Cache));
   if (cube->grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
@@ -34,13 +35,12 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
     unsigned char state =
         r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
     cube->grid[x].rightState = state;
-    cube->grid[x].lastModifiedEven = true;
   }
 
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
-        updateNeighborsCount(cube, x, y, z, true,
+        updateNeighborsCount(cube->cache, cube->side_size, x, y, z,
                              GET_CELL(cube, x, y, z).rightState == 0 ? 0 : 1);
       }
     }
@@ -49,34 +49,18 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   return cube;
 }
 
-void updateNeighborsCount(Cube *cube, int x, int y, int z, bool even_gen,
+void updateNeighborsCount(Cache *cache, long long size, int x, int y, int z,
                           unsigned char value) {
   for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + cube->side_size) % cube->side_size;
+    int z_ = (z + k + size) % size;
     for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + cube->side_size) % cube->side_size;
+      int y_ = (y + j + size) % size;
       for (int i = -1; i <= 1; i++) {
-        int x_ = (x + i + cube->side_size) % cube->side_size;
+        int x_ = (x + i + size) % size;
         if (i == 0 && j == 0 && k == 0) {
           continue;
         }
-
-        Cell *cell = &GET_CELL(cube, x_, y_, z_);
-
-        if (cell->lastModifiedEven != even_gen) {
-          cell->lastModifiedEven = even_gen;
-          if (even_gen) {
-            cell->rightNeighbourCount = cell->leftNeighbourCount;
-          } else {
-            cell->leftNeighbourCount = cell->rightNeighbourCount;
-          }
-        }
-
-        if (even_gen) {
-          GET_CELL(cube, x_, y_, z_).rightNeighbourCount += value;
-        } else {
-          GET_CELL(cube, x_, y_, z_).leftNeighbourCount += value;
-        }
+        cache[z_ * size * size + y_ * size + x_].aliveNeighbours += value;
       }
     }
   }

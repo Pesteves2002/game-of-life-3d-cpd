@@ -10,18 +10,23 @@
 typedef struct {
   unsigned char leftState : 4;
   unsigned char rightState : 4;
-  unsigned char leftNeighbourCount : 5;
-  unsigned char rightNeighbourCount : 5;
-  unsigned char lastModifiedEven : 1;
 } Cell;
+
+typedef struct {
+  unsigned char aliveNeighbours;
+} Cache;
 
 typedef struct {
   unsigned long long side_size;
   Cell *grid;
+  Cache *cache;
 } Cube;
 
 #define GET_CELL(cube, x, y, z)                                                \
   cube->grid[x + cube->side_size * (y + cube->side_size * z)]
+
+#define GET_NEIGHBOUR(cube, x, y, z)                                           \
+  cube->cache[x + cube->side_size * (y + cube->side_size * z)]
 
 #define SET_CELL_LEFT_STATE(cube, x, y, z, value)                              \
   GET_CELL(cube, x, y, z).leftState = value;
@@ -31,7 +36,7 @@ typedef struct {
 
 Cube *gen_initial_grid(long long N, float density, int seed);
 
-void updateNeighborsCount(Cube *cube, int x, int y, int z, bool even_gen,
+void updateNeighborsCount(Cache *cache, long long size, int x, int y, int z,
                           unsigned char value);
 
 #endif // UTILS_H

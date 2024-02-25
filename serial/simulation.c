@@ -1,11 +1,19 @@
 #include "simulation.h"
 
+#include <string.h>
+
+#include <time.h>
+
 Cube *cube;
 int gridSize;
+Cache *aux;
 
 void simulation(Cube *c, int genNum, int size) {
   cube = c;
   gridSize = size;
+
+  aux = (Cache *) malloc(gridSize * gridSize * gridSize * sizeof(Cache));
+  memcpy(aux, cube->cache, gridSize * gridSize * gridSize * sizeof(Cache));
 
   for (int x = 0; x < gridSize; x++) {
     for (int y = 0; y < gridSize; y++) {
@@ -19,11 +27,14 @@ void simulation(Cube *c, int genNum, int size) {
 
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
+
     clearLeaderboard();
 
     updateGridState(i % 2 == 0);
 
     updateMaxScores(i);
+
+    memcpy(cube->cache, aux, gridSize * gridSize * gridSize * sizeof(Cache));
   }
 };
 
@@ -66,26 +77,16 @@ void writeCellState(int x, int y, int z, bool even_gen, unsigned char old_state,
   }
 
   if (old_state != new_state) {
-    updateNeighborsCount(cube, x, y, z, even_gen, new_state == 0 ? -1 : 1);
+    updateNeighborsCount(aux, gridSize, x, y, z, new_state == 0 ? -1 : 1);
   }
 };
 
 // wraps around the grid
 unsigned char calculateNextState(int x, int y, int z, bool alive,
                                  bool even_gen) {
-  Cell *cell = &GET_CELL(cube, x, y, z);
-
-  if (cell->lastModifiedEven != even_gen) {
-    cell->lastModifiedEven = even_gen;
-    if (even_gen) {
-      cell->rightNeighbourCount = cell->leftNeighbourCount;
-    } else {
-      cell->leftNeighbourCount = cell->rightNeighbourCount;
-    }
-  }
 
   unsigned char neighbourCount =
-      even_gen ? cell->leftNeighbourCount : cell->rightNeighbourCount;
+      cube->cache[z * gridSize * gridSize + y * gridSize + x].aliveNeighbours;
   if (!alive) {
     if (neighbourCount >= 7 && neighbourCount <= 10) {
       unsigned char neighborsValues[N_SPECIES] = {0};
@@ -96,6 +97,7 @@ unsigned char calculateNextState(int x, int y, int z, bool alive,
     return 0;
   }
 
+  Cell *cell = &GET_CELL(cube, x, y, z);
   return (neighbourCount <= 4 || neighbourCount > 13) ? 0
          : even_gen                                   ? cell->leftState
                                                       : cell->rightState;
