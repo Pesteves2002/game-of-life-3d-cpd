@@ -15,14 +15,17 @@ int main(int argc, char *argv[]) {
   float density = atof(argv[3]);
   int input_seed = atoi(argv[4]);
 
-  double exec_time;
+  double start_time = -omp_get_wtime();
   Cube *cube = gen_initial_grid(grid_size, density, input_seed);
-  exec_time = -omp_get_wtime();
+  start_time += omp_get_wtime();
+  fprintf(stderr, "init: %.1fs\n", start_time);
+
+  double exec_time = -omp_get_wtime();
 
   simulation(cube, gen_num, grid_size);
 
   exec_time += omp_get_wtime();
-  fprintf(stderr, "%.1fs\n", exec_time);
+  fprintf(stderr, "run: %.1fs\n", exec_time);
 
   printLeaderboard();
   return 0;

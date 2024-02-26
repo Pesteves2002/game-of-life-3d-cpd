@@ -10,18 +10,18 @@ HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.c=.o)
 TARGET_EXECS := life3d
-TARGET_EXECS += tests/read tests/write tests/state tests/example
+# TARGET_EXECS += tests/read tests/write tests/state tests/example
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>
 vpath %.h $(INCLUDE_DIRS)
 
-CFLAGS := -fopenmp
 LDFLAGS := -fopenmp
 
 CFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 # warning suppressions
 CFLAGS += -Wno-sign-compare
+CFLAGS += -fopenmp
 
 #CFLAGS += -g
 CFLAGS += -Ofast -std=c17

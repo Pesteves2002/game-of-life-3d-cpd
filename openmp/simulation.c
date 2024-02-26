@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include <omp.h>
 #include <time.h>
 
 Cube *cube;
@@ -42,6 +43,7 @@ void simulation(Cube *c, int genNum, int size) {
 };
 
 void updateGridState(bool even_gen) {
+#pragma omp parallel for collapse(3)
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
@@ -105,6 +107,7 @@ unsigned char calculateNextState(int x, int y, int z,
 
 unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
+
   for (int k = -1; k <= 1; k++) {
     int z_ = (z + k + gridSize) % gridSize * gridSize * gridSize;
     for (int j = -1; j <= 1; j++) {
@@ -113,6 +116,7 @@ unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
         if (k == 0 && j == 0 && i == 0) {
           continue;
         }
+
         int x_ = (x + i + gridSize) % gridSize;
         int index = z_ + y_ + x_;
         Cell *cell = GET_CELL_INDEX(&cube, index);
@@ -130,6 +134,7 @@ unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
       mostFrequentValue = i;
     }
   }
+
   return mostFrequentValue;
 };
 
