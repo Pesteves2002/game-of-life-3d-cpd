@@ -12,7 +12,7 @@ void simulation(Cube *c, int genNum, int size) {
   cube = c;
   gridSize = size;
 
-  aux = (Cache *) malloc(gridSize * gridSize * gridSize * sizeof(Cache));
+  aux = (Cache *)malloc(gridSize * gridSize * gridSize * sizeof(Cache));
   memcpy(aux, cube->cache, gridSize * gridSize * gridSize * sizeof(Cache));
 
   for (int x = 0; x < gridSize; x++) {
@@ -39,9 +39,9 @@ void simulation(Cube *c, int genNum, int size) {
 };
 
 void updateGridState(bool even_gen) {
-  for (int x = 0; x < gridSize; x++) {
+  for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
-      for (int z = 0; z < gridSize; z++) {
+      for (int x = 0; x < gridSize; x++) {
         updateCellState(x, y, z, even_gen);
       }
     }
