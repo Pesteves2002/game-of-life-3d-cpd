@@ -6,21 +6,27 @@
 
 Cube *cube;
 int gridSize;
-unsigned char *aux;
+unsigned char *auxState;
+unsigned char *auxNeighbours;
 
 void simulation(Cube *c, int genNum, int size) {
   cube = c;
   gridSize = size;
 
-  aux = (unsigned char *)malloc(gridSize * gridSize * gridSize *
-                                sizeof(unsigned char));
-  memcpy(aux, cube->cache,
+  auxNeighbours = (unsigned char *)malloc(gridSize * gridSize * gridSize *
+                                          sizeof(unsigned char));
+
+  auxState = (unsigned char *)malloc(gridSize * gridSize * gridSize *
+                                     sizeof(unsigned char));
+
+  memcpy(auxNeighbours, cube->cache,
          gridSize * gridSize * gridSize * sizeof(unsigned char));
 
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
-        writeToLeaderboard(readCellState(x, y, z, 0));
+        int index = z * gridSize * gridSize + y * gridSize + x;
+        writeToLeaderboard(readCellState(index));
       }
     }
   }
@@ -32,64 +38,56 @@ void simulation(Cube *c, int genNum, int size) {
 
     clearLeaderboard();
 
-    updateGridState(i % 2 == 0);
+    updateGridState();
 
     updateMaxScores(i);
 
-    memcpy(cube->cache, aux,
+    memcpy(cube->cache, auxNeighbours,
+           gridSize * gridSize * gridSize * sizeof(unsigned char));
+
+    memcpy(cube->grid, auxState,
            gridSize * gridSize * gridSize * sizeof(unsigned char));
   }
 };
 
-void updateGridState(bool even_gen) {
+void updateGridState() {
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
-        updateCellState(x, y, z, even_gen);
+        updateCellState(x, y, z);
       }
     }
   }
 };
 
-void updateCellState(int x, int y, int z, bool even_gen) {
+void updateCellState(int x, int y, int z) {
 
   int index = z * gridSize * gridSize + y * gridSize + x;
-  Cell *cell = GET_CELL_INDEX(&cube, index);
 
-  unsigned char current_state = even_gen ? cell->leftState : cell->rightState;
-  unsigned char new_state =
-      calculateNextState(x, y, z, current_state, index, even_gen);
+  unsigned char current_state = readCellState(index);
+  unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
-  writeCellState(x, y, z, cell, even_gen, current_state, new_state);
+  writeCellState(x, y, z, index, current_state, new_state);
 
   writeToLeaderboard(new_state);
 };
 
-// odd states will read the lower 4 bits, even states will read the upper 4 bits
-unsigned char readCellState(int x, int y, int z, bool even_gen) {
-  return even_gen ? GET_CELL(cube, x, y, z).leftState
-                  : GET_CELL(cube, x, y, z).rightState;
-};
+unsigned char readCellState(int index) { return GET_CELL_INDEX(cube, index); };
 
-// odd states will write the upper 4 bits, even states will write the lower 4
-// bits
-void writeCellState(int x, int y, int z, Cell *cell, bool even_gen,
-                    unsigned char old_state, unsigned char new_state) {
-  if (even_gen) {
-    cell->rightState = new_state;
-  } else {
-    cell->leftState = new_state;
-  }
+void writeCellState(int x, int y, int z, int index, unsigned char old_state,
+                    unsigned char new_state) {
+
+  auxState[index] = new_state;
 
   if (old_state != new_state) {
-    updateNeighborsCount(aux, gridSize, x, y, z, new_state == 0 ? -1 : 1);
+    updateNeighborsCount(auxNeighbours, gridSize, x, y, z,
+                         new_state == 0 ? -1 : 1);
   }
 };
 
 // wraps around the grid
 unsigned char calculateNextState(int x, int y, int z,
-                                 unsigned char current_state, int index,
-                                 bool even_gen) {
+                                 unsigned char current_state, int index) {
 
   unsigned char neighbourCount = cube->cache[index];
   if (current_state == 0) {
@@ -97,13 +95,13 @@ unsigned char calculateNextState(int x, int y, int z,
       return 0;
     }
 
-    return getMostFrequentValue(x, y, z, even_gen);
+    return getMostFrequentValue(x, y, z);
   }
 
   return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
 };
 
-unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
+unsigned char getMostFrequentValue(int x, int y, int z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
   for (int k = -1; k <= 1; k++) {
     int z_ = (z + k + gridSize) % gridSize * gridSize * gridSize;
@@ -115,8 +113,7 @@ unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
         }
         int x_ = (x + i + gridSize) % gridSize;
         int index = z_ + y_ + x_;
-        Cell *cell = GET_CELL_INDEX(&cube, index);
-        unsigned char value = even_gen ? cell->leftState : cell->rightState;
+        unsigned char value = cube->grid[index];
         neighborsValues[value]++;
       }
     }
@@ -133,12 +130,12 @@ unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
   return mostFrequentValue;
 };
 
-void debugPrintGrid(bool even_gen) {
+void debugPrintGrid() {
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
-        int valueToPrint = even_gen ? (int)GET_CELL(cube, x, y, z).rightState
-                                    : (int)GET_CELL(cube, x, y, z).leftState;
+        int index = z * gridSize * gridSize + y * gridSize + x;
+        int valueToPrint = (int)cube->grid[index];
         if (valueToPrint == 0) {
           fprintf(stdout, "  ");
         } else {

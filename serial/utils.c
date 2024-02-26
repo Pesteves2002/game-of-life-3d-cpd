@@ -23,7 +23,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   }
 
   cube->side_size = N;
-  cube->grid = (Cell *)calloc(N * N * N, sizeof(Cell));
+  cube->grid = (unsigned char *)calloc(N * N * N, sizeof(unsigned char));
   cube->cache = (unsigned char *)calloc(N * N * N, sizeof(unsigned char));
   if (cube->grid == NULL) {
     printf("Failed to allocate matrix\n");
@@ -34,14 +34,15 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   for (unsigned long long x = 0; x < N * N * N; x++) {
     unsigned char state =
         r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
-    cube->grid[x].rightState = state;
+    cube->grid[x] = state;
   }
 
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
+        int index = z * N * N + y * N + x;
         updateNeighborsCount(cube->cache, cube->side_size, x, y, z,
-                             GET_CELL(cube, x, y, z).rightState == 0 ? 0 : 1);
+                             cube->grid[index] == 0 ? 0 : 1);
       }
     }
   }
