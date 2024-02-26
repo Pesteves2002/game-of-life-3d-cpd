@@ -53,12 +53,16 @@ void updateGridState(bool even_gen) {
 
 void updateCellState(int x, int y, int z, bool even_gen) {
 
-  unsigned char current_state = readCellState(x, y, z, even_gen);
+  // unsigned char current_state = readCellState(x, y, z, even_gen);
 
+  int index = z * gridSize * gridSize + y * gridSize + x;
+  Cell *cell = GET_CELL_INDEX(&cube, index);
+
+  unsigned char current_state = even_gen ? cell->leftState : cell->rightState;
   unsigned char new_state =
-      calculateNextState(x, y, z, current_state != 0, even_gen);
+      calculateNextState(x, y, z, current_state, index, even_gen);
 
-  writeCellState(x, y, z, even_gen, current_state, new_state);
+  writeCellState(x, y, z, cell, even_gen, current_state, new_state);
 
   writeToLeaderboard(new_state);
 };
@@ -71,12 +75,12 @@ unsigned char readCellState(int x, int y, int z, bool even_gen) {
 
 // odd states will write the upper 4 bits, even states will write the lower 4
 // bits
-void writeCellState(int x, int y, int z, bool even_gen, unsigned char old_state,
-                    unsigned char new_state) {
+void writeCellState(int x, int y, int z, Cell *cell, bool even_gen,
+                    unsigned char old_state, unsigned char new_state) {
   if (even_gen) {
-    SET_CELL_RIGHT_STATE(cube, x, y, z, new_state);
+    cell->rightState = new_state;
   } else {
-    SET_CELL_LEFT_STATE(cube, x, y, z, new_state);
+    cell->leftState = new_state;
   }
 
   if (old_state != new_state) {
@@ -85,40 +89,39 @@ void writeCellState(int x, int y, int z, bool even_gen, unsigned char old_state,
 };
 
 // wraps around the grid
-unsigned char calculateNextState(int x, int y, int z, bool alive,
+unsigned char calculateNextState(int x, int y, int z,
+                                 unsigned char current_state, int index,
                                  bool even_gen) {
 
-  unsigned char neighbourCount =
-      cube->cache[z * gridSize * gridSize + y * gridSize + x];
-  if (!alive) {
-    if (neighbourCount >= 7 && neighbourCount <= 10) {
-      unsigned char neighborsValues[N_SPECIES + 1] = {0};
-      getNeighborsValue(x, y, z, even_gen, neighborsValues);
-      return getMostFrequentValue(neighborsValues);
+  unsigned char neighbourCount = cube->cache[index];
+  if (current_state == 0) {
+
+    if (neighbourCount < 7 || neighbourCount > 10) {
+      return 0;
     }
 
-    return 0;
+    unsigned char neighborsValues[N_SPECIES + 1] = {0};
+    getNeighborsValue(x, y, z, even_gen, neighborsValues);
+    return getMostFrequentValue(neighborsValues);
   }
 
-  Cell *cell = &GET_CELL(cube, x, y, z);
-  return (neighbourCount <= 4 || neighbourCount > 13) ? 0
-         : even_gen                                   ? cell->leftState
-                                                      : cell->rightState;
+  return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
 };
 
 void getNeighborsValue(int x, int y, int z, bool even_gen,
                        unsigned char *neighborsValues) {
   for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + gridSize) % gridSize;
+    int z_ = (z + k + gridSize) % gridSize * gridSize * gridSize;
     for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + gridSize) % gridSize;
+      int y_ = (y + j + gridSize) % gridSize * gridSize;
       for (int i = -1; i <= 1; i++) {
-        if (i == 0 && j == 0 && k == 0) {
+        if (k == 0 && j == 0 && i == 0) {
           continue;
         }
         int x_ = (x + i + gridSize) % gridSize;
-        unsigned char value = readCellState(x_, y_, z_, even_gen);
-
+        int index = z_ + y_ + x_;
+        Cell *cell = GET_CELL_INDEX(&cube, index);
+        unsigned char value = even_gen ? cell->leftState : cell->rightState;
         neighborsValues[value]++;
       }
     }
