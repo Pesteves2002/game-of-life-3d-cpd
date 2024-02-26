@@ -53,8 +53,6 @@ void updateGridState(bool even_gen) {
 
 void updateCellState(int x, int y, int z, bool even_gen) {
 
-  // unsigned char current_state = readCellState(x, y, z, even_gen);
-
   int index = z * gridSize * gridSize + y * gridSize + x;
   Cell *cell = GET_CELL_INDEX(&cube, index);
 
@@ -95,8 +93,7 @@ unsigned char calculateNextState(int x, int y, int z,
 
   unsigned char neighbourCount = cube->cache[index];
   if (current_state == 0) {
-
-    if (neighbourCount < 7 || neighbourCount > 10) {
+    if (!(neighbourCount >= 7 && neighbourCount <= 10)) {
       return 0;
     }
 
