@@ -97,16 +97,14 @@ unsigned char calculateNextState(int x, int y, int z,
       return 0;
     }
 
-    unsigned char neighborsValues[N_SPECIES + 1] = {0};
-    getNeighborsValue(x, y, z, even_gen, neighborsValues);
-    return getMostFrequentValue(neighborsValues);
+    return getMostFrequentValue(x, y, z, even_gen);
   }
 
   return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
 };
 
-void getNeighborsValue(int x, int y, int z, bool even_gen,
-                       unsigned char *neighborsValues) {
+unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen) {
+  unsigned char neighborsValues[N_SPECIES + 1] = {0};
   for (int k = -1; k <= 1; k++) {
     int z_ = (z + k + gridSize) % gridSize * gridSize * gridSize;
     for (int j = -1; j <= 1; j++) {
@@ -123,9 +121,7 @@ void getNeighborsValue(int x, int y, int z, bool even_gen,
       }
     }
   }
-};
 
-unsigned char getMostFrequentValue(unsigned char *neighborsValues) {
   unsigned char mostFrequentValue = 0;
   int maxCount = 0;
   for (int i = 1; i < N_SPECIES + 1; i++) {

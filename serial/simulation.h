@@ -24,9 +24,6 @@ unsigned char calculateNextState(int x, int y, int z,
                                  unsigned char current_state, int index,
                                  bool even_gen);
 
-void getNeighborsValue(int x, int y, int z, bool even_gen,
-                       unsigned char *neighborsValues);
-
-unsigned char getMostFrequentValue(unsigned char *neighborsValues);
+unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen);
 
 #endif // SIMULATION_H
