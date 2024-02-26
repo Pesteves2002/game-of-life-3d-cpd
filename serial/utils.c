@@ -24,7 +24,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
   cube->side_size = N;
   cube->grid = (Cell *)calloc(N * N * N, sizeof(Cell));
-  cube->cache = (Cache *)calloc(N * N * N, sizeof(Cache));
+  cube->cache = (unsigned char *)calloc(N * N * N, sizeof(unsigned char));
   if (cube->grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
@@ -49,18 +49,18 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   return cube;
 }
 
-void updateNeighborsCount(Cache *cache, long long size, int x, int y, int z,
-                          unsigned char value) {
+void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
+                          int z, unsigned char value) {
   for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + size) % size;
+    int z_ = (z + k + size) % size * size * size;
     for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + size) % size;
+      int y_ = (y + j + size) % size * size;
       for (int i = -1; i <= 1; i++) {
         int x_ = (x + i + size) % size;
         if (i == 0 && j == 0 && k == 0) {
           continue;
         }
-        cache[z_ * size * size + y_ * size + x_].aliveNeighbours += value;
+        cache[z_ + y_ + x_] += value;
       }
     }
   }

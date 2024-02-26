@@ -6,18 +6,20 @@
 
 Cube *cube;
 int gridSize;
-Cache *aux;
+unsigned char *aux;
 
 void simulation(Cube *c, int genNum, int size) {
   cube = c;
   gridSize = size;
 
-  aux = (Cache *)malloc(gridSize * gridSize * gridSize * sizeof(Cache));
-  memcpy(aux, cube->cache, gridSize * gridSize * gridSize * sizeof(Cache));
+  aux = (unsigned char *)malloc(gridSize * gridSize * gridSize *
+                                sizeof(unsigned char));
+  memcpy(aux, cube->cache,
+         gridSize * gridSize * gridSize * sizeof(unsigned char));
 
-  for (int x = 0; x < gridSize; x++) {
+  for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
-      for (int z = 0; z < gridSize; z++) {
+      for (int x = 0; x < gridSize; x++) {
         writeToLeaderboard(readCellState(x, y, z, 0));
       }
     }
@@ -34,7 +36,8 @@ void simulation(Cube *c, int genNum, int size) {
 
     updateMaxScores(i);
 
-    memcpy(cube->cache, aux, gridSize * gridSize * gridSize * sizeof(Cache));
+    memcpy(cube->cache, aux,
+           gridSize * gridSize * gridSize * sizeof(unsigned char));
   }
 };
 
@@ -86,10 +89,10 @@ unsigned char calculateNextState(int x, int y, int z, bool alive,
                                  bool even_gen) {
 
   unsigned char neighbourCount =
-      cube->cache[z * gridSize * gridSize + y * gridSize + x].aliveNeighbours;
+      cube->cache[z * gridSize * gridSize + y * gridSize + x];
   if (!alive) {
     if (neighbourCount >= 7 && neighbourCount <= 10) {
-      unsigned char neighborsValues[N_SPECIES] = {0};
+      unsigned char neighborsValues[N_SPECIES + 1] = {0};
       getNeighborsValue(x, y, z, even_gen, neighborsValues);
       return getMostFrequentValue(neighborsValues);
     }
@@ -116,9 +119,7 @@ void getNeighborsValue(int x, int y, int z, bool even_gen,
         int x_ = (x + i + gridSize) % gridSize;
         unsigned char value = readCellState(x_, y_, z_, even_gen);
 
-        if (value != 0) {
-          neighborsValues[value - 1]++;
-        }
+        neighborsValues[value]++;
       }
     }
   }
@@ -127,13 +128,13 @@ void getNeighborsValue(int x, int y, int z, bool even_gen,
 unsigned char getMostFrequentValue(unsigned char *neighborsValues) {
   unsigned char mostFrequentValue = 0;
   int maxCount = 0;
-  for (int i = 0; i < N_SPECIES; i++) {
+  for (int i = 1; i < N_SPECIES + 1; i++) {
     if (neighborsValues[i] > maxCount) {
       maxCount = neighborsValues[i];
       mostFrequentValue = i;
     }
   }
-  return mostFrequentValue + 1;
+  return mostFrequentValue;
 };
 
 void debugPrintGrid(bool even_gen) {
