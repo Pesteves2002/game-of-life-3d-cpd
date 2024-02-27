@@ -52,17 +52,43 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
 void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
                           int z, unsigned char value) {
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + size) % size * size * size;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + size) % size * size;
-      for (int i = -1; i <= 1; i++) {
-        int x_ = (x + i + size) % size;
-        if (i == 0 && j == 0 && k == 0) {
-          continue;
-        }
-        cache[z_ + y_ + x_] += value;
-      }
-    }
-  }
+  int z1 = (z + size - 1) % size * size * size;
+  int z2 = (z + size) % size * size * size;
+  int z3 = (z + 1) % size * size * size;
+  int y1 = (y + size - 1) % size * size;
+  int y2 = (y + size) % size * size;
+  int y3 = (y + 1) % size * size;
+  int x1 = (x + size - 1) % size;
+  int x2 = (x + size) % size;
+  int x3 = (x + 1) % size;
+
+  cache[z1 + y1 + x1] += value;
+  cache[z1 + y1 + x2] += value;
+  cache[z1 + y1 + x3] += value;
+  cache[z1 + y2 + x1] += value;
+  cache[z1 + y2 + x2] += value;
+  cache[z1 + y2 + x3] += value;
+  cache[z1 + y3 + x1] += value;
+  cache[z1 + y3 + x2] += value;
+  cache[z1 + y3 + x3] += value;
+
+  cache[z2 + y1 + x1] += value;
+  cache[z2 + y1 + x2] += value;
+  cache[z2 + y1 + x3] += value;
+  cache[z2 + y2 + x1] += value;
+  // cache[z2 + y2 + x2] += value;
+  cache[z2 + y2 + x3] += value;
+  cache[z2 + y3 + x1] += value;
+  cache[z2 + y3 + x2] += value;
+  cache[z2 + y3 + x3] += value;
+
+  cache[z3 + y1 + x1] += value;
+  cache[z3 + y1 + x2] += value;
+  cache[z3 + y1 + x3] += value;
+  cache[z3 + y2 + x1] += value;
+  cache[z3 + y2 + x2] += value;
+  cache[z3 + y2 + x3] += value;
+  cache[z3 + y3 + x1] += value;
+  cache[z3 + y3 + x2] += value;
+  cache[z3 + y3 + x3] += value;
 };
