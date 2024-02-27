@@ -26,8 +26,6 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   long long paddingSize = N + 2;
   cube->grid = (unsigned char *)calloc(paddingSize * paddingSize * paddingSize,
                                        sizeof(unsigned char));
-  cube->cache = (unsigned char *)calloc(paddingSize * paddingSize * paddingSize,
-                                        sizeof(unsigned char));
   if (cube->grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
@@ -61,92 +59,38 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
             cube->grid[index] = value;
           }
 
-	  if (border_y) {
-	    index = z * paddingSize * paddingSize + y_ * paddingSize + x;
-	    cube->grid[index] = value;
-	  }
+          if (border_y) {
+            index = z * paddingSize * paddingSize + y_ * paddingSize + x;
+            cube->grid[index] = value;
+          }
 
-	  if (border_z) {
-	    index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-	    cube->grid[index] = value;
-	    }
+          if (border_z) {
+            index = z_ * paddingSize * paddingSize + y * paddingSize + x;
+            cube->grid[index] = value;
+          }
 
-	  if (border_x && border_y) {
-	  index = z * paddingSize * paddingSize + y_ * paddingSize + x_;
-	  cube->grid[index] = value;
-	  }
+          if (border_x && border_y) {
+            index = z * paddingSize * paddingSize + y_ * paddingSize + x_;
+            cube->grid[index] = value;
+          }
 
-	  if (border_x && border_z) {
-	  index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
-	  cube->grid[index] = value;
-	  }
+          if (border_x && border_z) {
+            index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
+            cube->grid[index] = value;
+          }
 
-	  if (border_y && border_z) {
-	  index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
-	  cube->grid[index] = value;
-	  }
+          if (border_y && border_z) {
+            index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
+            cube->grid[index] = value;
+          }
 
-	  if (border_x && border_y && border_z) {
-	  index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
-	  cube->grid[index] = value;
-	  }
-
-	}
+          if (border_x && border_y && border_z) {
+            index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
+            cube->grid[index] = value;
+          }
+        }
       }
     }
   }
-  for (int z = 0; z < N; z++) {
-    for (int y = 0; y < N; y++) {
-      for (int x = 0; x < N; x++) {
-        int index = z * N * N + y * N + x;
-        updateNeighborsCount(cube->cache, cube->side_size, x, y, z,
-                             cube->grid[index] == 0 ? 0 : 1);
-      }
-    }
-  }
-
   return cube;
 }
-
-void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
-                          int z, unsigned char value) {
-  int z1 = (z + size - 1) % size * size * size;
-  int z2 = (z + size) % size * size * size;
-  int z3 = (z + 1) % size * size * size;
-  int y1 = (y + size - 1) % size * size;
-  int y2 = (y + size) % size * size;
-  int y3 = (y + 1) % size * size;
-  int x1 = (x + size - 1) % size;
-  int x2 = (x + size) % size;
-  int x3 = (x + 1) % size;
-
-  cache[z1 + y1 + x1] += value;
-  cache[z1 + y1 + x2] += value;
-  cache[z1 + y1 + x3] += value;
-  cache[z1 + y2 + x1] += value;
-  cache[z1 + y2 + x2] += value;
-  cache[z1 + y2 + x3] += value;
-  cache[z1 + y3 + x1] += value;
-  cache[z1 + y3 + x2] += value;
-  cache[z1 + y3 + x3] += value;
-
-  cache[z2 + y1 + x1] += value;
-  cache[z2 + y1 + x2] += value;
-  cache[z2 + y1 + x3] += value;
-  cache[z2 + y2 + x1] += value;
-  // cache[z2 + y2 + x2] += value;
-  cache[z2 + y2 + x3] += value;
-  cache[z2 + y3 + x1] += value;
-  cache[z2 + y3 + x2] += value;
-  cache[z2 + y3 + x3] += value;
-
-  cache[z3 + y1 + x1] += value;
-  cache[z3 + y1 + x2] += value;
-  cache[z3 + y1 + x3] += value;
-  cache[z3 + y2 + x1] += value;
-  cache[z3 + y2 + x2] += value;
-  cache[z3 + y2 + x3] += value;
-  cache[z3 + y3 + x1] += value;
-  cache[z3 + y3 + x2] += value;
-  cache[z3 + y3 + x3] += value;
-};
