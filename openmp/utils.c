@@ -37,7 +37,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
     cube->grid[x] = state;
   }
 
-#pragma omp parallel for collapse(3)
+#pragma omp parallel for
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
@@ -63,60 +63,60 @@ void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
   int x2 = (x + size) % size;
   int x3 = (x + 1) % size;
 
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y1 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y1 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y1 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y2 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y2 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y2 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y3 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y3 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z1 + y3 + x3] += value;
 
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y1 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y1 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y1 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y2 + x1] += value;
-// #pragma omp atomic
+// //#pragma omp atomic
 //  cache[z2 + y2 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y2 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y3 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y3 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z2 + y3 + x3] += value;
 
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y1 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y1 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y1 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y2 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y2 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y2 + x3] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y3 + x1] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y3 + x2] += value;
-#pragma omp atomic
+//#pragma omp atomic
   cache[z3 + y3 + x3] += value;
 };

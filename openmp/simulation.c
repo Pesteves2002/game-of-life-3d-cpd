@@ -25,7 +25,7 @@ void initializeAux(Cube *c, int num, int size) {
   memcpy(auxNeighbours, cube->cache,
          gridSize * gridSize * gridSize * sizeof(unsigned char));
 
-#pragma omp parallel for collapse(3)
+#pragma omp parallel for
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
@@ -57,7 +57,7 @@ void simulation() {
 };
 
 void updateGridState() {
-#pragma omp parallel for collapse(3)
+#pragma omp parallel for
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
