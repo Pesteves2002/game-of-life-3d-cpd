@@ -7,20 +7,21 @@
 
 void simulation(Cube *c, int gen_num, int grid_size);
 
-void debugPrintGrid(bool even_gen);
+void debugPrintGrid();
 
-void updateGridState(bool even_gen);
+void updateGridState();
 
-unsigned char calculateNextState(int i, int j, int k, bool alive,
-                                 bool even_gen);
+void updateCellState(int i, int j, int k);
 
-void updateCellState(int i, int j, int k, bool even_gen);
+unsigned char readCellState(int index);
 
-unsigned char readCellState(int i, int j, int k, bool even_gen);
-
-void writeCellState(int i, int j, int k, bool even_gen,
+void writeCellState(int x, int y, int z, int index, unsigned char old_state,
                     unsigned char new_state);
 
-unsigned char getMostFrequentValue(unsigned char *neighborsValues);
+void resetNeighborsCount(int x, int y, int z);
+
+unsigned char calculateNextState(int x, int y, int z,
+                                 unsigned char current_state, int index);
+unsigned char getMostFrequentValue(int x, int y, int z);
 
 #endif // SIMULATION_H

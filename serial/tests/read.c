@@ -5,6 +5,19 @@ int SIZE = 3;
 Cube *c;
 
 void fillGrid(int size, int value, bool even) {
+  // Reset the neighbors firts
+  for (int i = 0; i < size; i++) {
+    for (int j = 0; j < size; j++) {
+      for (int k = 0; k < size; k++) {
+        if (even) {
+          GET_CELL(c, i, j, k).leftNeighbourCount = 0;
+        } else {
+          GET_CELL(c, i, j, k).rightNeighbourCount = 0;
+        }
+      }
+    }
+  }
+
   for (int i = 0; i < size; i++) {
     for (int j = 0; j < size; j++) {
       for (int k = 0; k < size; k++) {
