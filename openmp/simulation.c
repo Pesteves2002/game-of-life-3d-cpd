@@ -18,6 +18,7 @@ void simulation(Cube *c, int genNum, int size) {
   memcpy(aux, cube->cache,
          gridSize * gridSize * gridSize * sizeof(unsigned char));
 
+#pragma omp parallel for collapse(3)
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
@@ -30,7 +31,6 @@ void simulation(Cube *c, int genNum, int size) {
 
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
-
     clearLeaderboard();
 
     updateGridState(i % 2 == 0);

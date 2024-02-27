@@ -37,6 +37,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
     cube->grid[x].rightState = state;
   }
 
+#pragma omp parallel for collapse(3)
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
@@ -60,6 +61,8 @@ void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
         if (i == 0 && j == 0 && k == 0) {
           continue;
         }
+
+#pragma omp atomic
         cache[z_ + y_ + x_] += value;
       }
     }

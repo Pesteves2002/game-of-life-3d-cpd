@@ -21,6 +21,8 @@ void writeToLeaderboard(char new_state) {
   if (new_state == 0) {
     return;
   }
+
+#pragma omp atomic
   leaderboard[new_state - 1]++;
 };
 
