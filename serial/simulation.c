@@ -36,6 +36,8 @@ void simulation(Cube *c, int genNum, int size) {
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
 
+    debugPrintGrid();
+
     clearLeaderboard();
 
     updateGridState();
@@ -131,6 +133,7 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
 };
 
 void debugPrintGrid() {
+  gridSize += 2;
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
@@ -146,8 +149,9 @@ void debugPrintGrid() {
       fprintf(stdout, "\n");
     }
 
-    fprintf(stdout, "\n");
+    fprintf(stdout, "||||\n");
   }
 
   fprintf(stdout, "---\n");
+  gridSize -= 2;
 };
