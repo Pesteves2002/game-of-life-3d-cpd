@@ -8,10 +8,12 @@ Cube *cube;
 int gridSize;
 unsigned char *auxState;
 unsigned char *auxNeighbours;
+int genNum;
 
-void simulation(Cube *c, int genNum, int size) {
+void initializeAux(Cube *c, int num, int size) {
   cube = c;
   gridSize = size;
+  genNum = num;
 
   auxNeighbours = (unsigned char *)malloc(gridSize * gridSize * gridSize *
                                           sizeof(unsigned char));
@@ -32,7 +34,9 @@ void simulation(Cube *c, int genNum, int size) {
   }
 
   updateMaxScores(0);
+}
 
+void simulation() {
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
 

@@ -17,9 +17,11 @@ int main(int argc, char *argv[]) {
 
   double exec_time;
   Cube *cube = gen_initial_grid(grid_size, density, input_seed);
+  initializeAux(cube, gen_num, grid_size);
+
   exec_time = -omp_get_wtime();
 
-  simulation(cube, gen_num, grid_size);
+  simulation();
 
   exec_time += omp_get_wtime();
   fprintf(stderr, "%.1fs\n", exec_time);
