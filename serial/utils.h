@@ -8,13 +8,8 @@
 #include <stdlib.h>
 
 typedef struct {
-  unsigned char leftState : 4;
-  unsigned char rightState : 4;
-} Cell;
-
-typedef struct {
   unsigned long long side_size;
-  Cell *grid;
+  unsigned char *grid;
   unsigned char *cache;
 } Cube;
 
@@ -25,12 +20,6 @@ typedef struct {
 
 #define GET_NEIGHBOUR(cube, x, y, z)                                           \
   cube->cache[x + cube->side_size * (y + cube->side_size * z)]
-
-#define SET_CELL_LEFT_STATE(cube, x, y, z, value)                              \
-  GET_CELL(cube, x, y, z).leftState = value;
-
-#define SET_CELL_RIGHT_STATE(cube, x, y, z, value)                             \
-  GET_CELL(cube, x, y, z).rightState = value;
 
 Cube *gen_initial_grid(long long N, float density, int seed);
 

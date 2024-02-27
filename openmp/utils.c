@@ -23,7 +23,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   }
 
   cube->side_size = N;
-  cube->grid = (Cell *)calloc(N * N * N, sizeof(Cell));
+  cube->grid = (unsigned char *)calloc(N * N * N, sizeof(unsigned char));
   cube->cache = (unsigned char *)calloc(N * N * N, sizeof(unsigned char));
   if (cube->grid == NULL) {
     printf("Failed to allocate matrix\n");
@@ -34,15 +34,16 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   for (unsigned long long x = 0; x < N * N * N; x++) {
     unsigned char state =
         r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
-    cube->grid[x].rightState = state;
+    cube->grid[x] = state;
   }
 
 #pragma omp parallel for collapse(3)
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
+        int index = z * N * N + y * N + x;
         updateNeighborsCount(cube->cache, cube->side_size, x, y, z,
-                             GET_CELL(cube, x, y, z).rightState == 0 ? 0 : 1);
+                             cube->grid[index] == 0 ? 0 : 1);
       }
     }
   }
@@ -52,19 +53,70 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
 void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
                           int z, unsigned char value) {
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k + size) % size * size * size;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j + size) % size * size;
-      for (int i = -1; i <= 1; i++) {
-        int x_ = (x + i + size) % size;
-        if (i == 0 && j == 0 && k == 0) {
-          continue;
-        }
+  int z1 = (z + size - 1) % size * size * size;
+  int z2 = (z + size) % size * size * size;
+  int z3 = (z + 1) % size * size * size;
+  int y1 = (y + size - 1) % size * size;
+  int y2 = (y + size) % size * size;
+  int y3 = (y + 1) % size * size;
+  int x1 = (x + size - 1) % size;
+  int x2 = (x + size) % size;
+  int x3 = (x + 1) % size;
 
 #pragma omp atomic
-        cache[z_ + y_ + x_] += value;
-      }
-    }
-  }
+  cache[z1 + y1 + x1] += value;
+#pragma omp atomic
+  cache[z1 + y1 + x2] += value;
+#pragma omp atomic
+  cache[z1 + y1 + x3] += value;
+#pragma omp atomic
+  cache[z1 + y2 + x1] += value;
+#pragma omp atomic
+  cache[z1 + y2 + x2] += value;
+#pragma omp atomic
+  cache[z1 + y2 + x3] += value;
+#pragma omp atomic
+  cache[z1 + y3 + x1] += value;
+#pragma omp atomic
+  cache[z1 + y3 + x2] += value;
+#pragma omp atomic
+  cache[z1 + y3 + x3] += value;
+
+#pragma omp atomic
+  cache[z2 + y1 + x1] += value;
+#pragma omp atomic
+  cache[z2 + y1 + x2] += value;
+#pragma omp atomic
+  cache[z2 + y1 + x3] += value;
+#pragma omp atomic
+  cache[z2 + y2 + x1] += value;
+// #pragma omp atomic
+//  cache[z2 + y2 + x2] += value;
+#pragma omp atomic
+  cache[z2 + y2 + x3] += value;
+#pragma omp atomic
+  cache[z2 + y3 + x1] += value;
+#pragma omp atomic
+  cache[z2 + y3 + x2] += value;
+#pragma omp atomic
+  cache[z2 + y3 + x3] += value;
+
+#pragma omp atomic
+  cache[z3 + y1 + x1] += value;
+#pragma omp atomic
+  cache[z3 + y1 + x2] += value;
+#pragma omp atomic
+  cache[z3 + y1 + x3] += value;
+#pragma omp atomic
+  cache[z3 + y2 + x1] += value;
+#pragma omp atomic
+  cache[z3 + y2 + x2] += value;
+#pragma omp atomic
+  cache[z3 + y2 + x3] += value;
+#pragma omp atomic
+  cache[z3 + y3 + x1] += value;
+#pragma omp atomic
+  cache[z3 + y3 + x2] += value;
+#pragma omp atomic
+  cache[z3 + y3 + x3] += value;
 };

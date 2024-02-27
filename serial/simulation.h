@@ -5,25 +5,25 @@
 #include "utils.h"
 #include <stdbool.h>
 
-void simulation(Cube *c, int gen_num, int grid_size);
+void initializeAux(Cube *c, int gen_num, int grid_size);
 
-void debugPrintGrid(bool even_gen);
+void simulation();
 
-void updateGridState(bool even_gen);
+void debugPrintGrid();
 
-void updateCellState(int i, int j, int k, bool even_gen);
+void updateGridState();
 
-unsigned char readCellState(int i, int j, int k, bool even_gen);
+void updateCellState(int i, int j, int k);
 
-void writeCellState(int x, int y, int z, Cell *cell, bool even_gen,
-                    unsigned char old_state, unsigned char new_state);
+unsigned char readCellState(int index);
+
+void writeCellState(int x, int y, int z, int index, unsigned char old_state,
+                    unsigned char new_state);
 
 void resetNeighborsCount(int x, int y, int z);
 
 unsigned char calculateNextState(int x, int y, int z,
-                                 unsigned char current_state, int index,
-                                 bool even_gen);
-
-unsigned char getMostFrequentValue(int x, int y, int z, bool even_gen);
+                                 unsigned char current_state, int index);
+unsigned char getMostFrequentValue(int x, int y, int z);
 
 #endif // SIMULATION_H

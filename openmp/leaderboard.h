@@ -9,7 +9,7 @@ void clearLeaderboard();
 
 void updateMaxScores(int currentGen);
 
-void writeToLeaderboard(char state);
+void writeToLeaderboard(unsigned char state);
 
 void printLeaderboard();
 
