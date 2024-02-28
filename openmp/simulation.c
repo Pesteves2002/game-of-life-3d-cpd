@@ -38,6 +38,14 @@ void initializeAux(Cube *c, int num, int size) {
   updateMaxScores(0);
 }
 
+void commitState() {
+  memcpy(cube->cache, auxNeighbours,
+         gridSize * gridSize * gridSize * sizeof(unsigned char));
+
+  memcpy(cube->grid, auxState,
+         gridSize * gridSize * gridSize * sizeof(unsigned char));
+}
+
 void simulation() {
   // generations start at 1
   for (int i = 1; i < genNum + 1; i++) {
@@ -48,11 +56,7 @@ void simulation() {
 
     updateMaxScores(i);
 
-    memcpy(cube->cache, auxNeighbours,
-           gridSize * gridSize * gridSize * sizeof(unsigned char));
-
-    memcpy(cube->grid, auxState,
-           gridSize * gridSize * gridSize * sizeof(unsigned char));
+    commitState();
   }
 };
 
@@ -79,7 +83,7 @@ void updateCellState(int x, int y, int z) {
   writeToLeaderboard(new_state);
 };
 
-unsigned char readCellState(int index) { return GET_CELL_INDEX(cube, index); };
+unsigned char readCellState(int index) { return cube->grid[index]; };
 
 void writeCellState(int x, int y, int z, int index, unsigned char old_state,
                     unsigned char new_state) {
@@ -164,12 +168,14 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   return mostFrequentValue;
 };
 
-void debugPrintGrid() {
+void debugPrintGrid(unsigned char *grid) {
+  fprintf(stdout, "\nDebug---\n");
+
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
         int index = z * gridSize * gridSize + y * gridSize + x;
-        int valueToPrint = (int)cube->grid[index];
+        int valueToPrint = grid[index];
         if (valueToPrint == 0) {
           fprintf(stdout, "  ");
         } else {

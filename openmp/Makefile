@@ -10,7 +10,7 @@ HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.c=.o)
 TARGET_EXECS := life3d
-# TARGET_EXECS += tests/read tests/write tests/state tests/example
+TARGET_EXECS += tests/read tests/write tests/state tests/example
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
 # vpath %.h <DIR> tells make to look for header files in <DIR>

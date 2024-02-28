@@ -5,9 +5,10 @@ int GENS = 4;
 
 int main() {
 
-  Cube *cube = gen_initial_grid(SIZE, 0.4, 100);
+  Cube *cube = gen_initial_grid(SIZE, 0.4f, 100);
 
-  simulation(cube, GENS, SIZE);
+  initializeAux(cube, GENS, SIZE);
+  simulation();
 
   fprintf(stdout, "Successful test\n");
   return 0;
