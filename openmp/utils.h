@@ -13,6 +13,8 @@ typedef struct {
   unsigned char *cache;
 } Cube;
 
+#define CALC_INDEX(x, y, z, size) ((z) * (size) * (size) + (y) * (size) + (x))
+
 Cube *gen_initial_grid(long long N, float density, int seed);
 
 void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,

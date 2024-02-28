@@ -12,7 +12,7 @@ void fillGrid(int size, int value) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
 
         writeCellState(x, y, z, index, readCellState(index), value);
       }
@@ -26,7 +26,7 @@ void checkState(int size, char expectedState) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
 
         unsigned char currentState = readCellState(index);
         unsigned char newState = calculateNextState(x, y, z, currentState, index);
@@ -44,11 +44,12 @@ void fillNcells(int size, int n, char new_state) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
         if (count == n) {
           commitState();
           return;
         }
+
         writeCellState(x, y, z, index, readCellState(index),
                        new_state);
         count++;
@@ -64,7 +65,7 @@ void countGrid(int size, int alive, int dead) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
 
         unsigned char state = readCellState(index);
         unsigned char newState = calculateNextState(x, y, z, state, index);

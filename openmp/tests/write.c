@@ -11,7 +11,7 @@ void fillGrid(int size, int value) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
 
         writeCellState(x, y, z, index, readCellState(index), value);
       }
@@ -25,7 +25,7 @@ void checkGrid(int size, unsigned char value) {
   for (int z = 0; z < size; z++) {
     for (int y = 0; y < size; y++) {
       for (int x = 0; x < size; x++) {
-        int index = z * size * size + y * size + x;
+        int index = CALC_INDEX(x, y, z, size);
 
         assert(readCellState(index) == value);
       }

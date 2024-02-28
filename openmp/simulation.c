@@ -1,9 +1,5 @@
 #include "simulation.h"
-
 #include <string.h>
-
-#include <omp.h>
-#include <time.h>
 
 Cube *cube;
 int gridSize;
@@ -29,7 +25,7 @@ void initializeAux(Cube *c, int num, int size) {
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
-        int index = z * gridSize * gridSize + y * gridSize + x;
+        int index = CALC_INDEX(x, y, z, gridSize);
         writeToLeaderboard(readCellState(index));
       }
     }
@@ -72,8 +68,7 @@ void updateGridState() {
 };
 
 void updateCellState(int x, int y, int z) {
-
-  int index = z * gridSize * gridSize + y * gridSize + x;
+  int index = CALC_INDEX(x, y, z, gridSize);
 
   unsigned char current_state = readCellState(index);
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
@@ -125,7 +120,6 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   int x2 = (x + gridSize) % gridSize;
   int x3 = (x + 1) % gridSize;
 
-  
   neighborsValues[cube->grid[z1 + y1 + x1]]++;
   neighborsValues[cube->grid[z1 + y1 + x2]]++;
   neighborsValues[cube->grid[z1 + y1 + x3]]++;
@@ -174,7 +168,7 @@ void debugPrintGrid(unsigned char *grid) {
   for (int z = 0; z < gridSize; z++) {
     for (int y = 0; y < gridSize; y++) {
       for (int x = 0; x < gridSize; x++) {
-        int index = z * gridSize * gridSize + y * gridSize + x;
+        int index = CALC_INDEX(x, y, z, gridSize);
         int valueToPrint = grid[index];
         if (valueToPrint == 0) {
           fprintf(stdout, "  ");
