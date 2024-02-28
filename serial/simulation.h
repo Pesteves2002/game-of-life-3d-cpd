@@ -11,7 +11,7 @@ void simulation();
 
 void debugPrintGrid();
 
-void debugPrintNeighbors();
+void debugPrintNeighbourCount();
 
 void updateGridState();
 

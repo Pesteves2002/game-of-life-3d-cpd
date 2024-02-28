@@ -10,6 +10,7 @@
 typedef struct {
   unsigned long long side_size;
   unsigned char *grid;
+  unsigned char *neighbourCount;
 } Cube;
 
 #define GET_CELL(cube, x, y, z)                                                \

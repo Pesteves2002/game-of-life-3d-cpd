@@ -8,6 +8,7 @@ Cube *cube;
 int gridSize;
 int gridPadding;
 unsigned char *auxState;
+unsigned char *auxNeighbourCount;
 int genNum;
 
 void initializeAux(Cube *c, int num, int size) {
@@ -18,6 +19,10 @@ void initializeAux(Cube *c, int num, int size) {
 
   auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
                                      sizeof(unsigned char));
+
+  auxNeighbourCount = (unsigned char *)malloc(
+      gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
   for (int z = 1; z < gridPadding - 1; z++) {
     for (int y = 1; y < gridPadding - 1; y++) {
       for (int x = 1; x < gridPadding - 1; x++) {
@@ -28,7 +33,11 @@ void initializeAux(Cube *c, int num, int size) {
   }
 
   updateMaxScores(0);
+
   memcpy(auxState, cube->grid,
+         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
+  memcpy(auxNeighbourCount, cube->neighbourCount,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 };
 
@@ -42,6 +51,9 @@ void simulation() {
     updateMaxScores(gen);
 
     memcpy(cube->grid, auxState,
+           gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
+    memcpy(cube->neighbourCount, auxNeighbourCount,
            gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
   }
 };
@@ -117,32 +129,18 @@ void writeCellState(int x, int y, int z, int index, unsigned char old_state,
     index = z_ * gridPadding * gridPadding + y_ * gridPadding + x_;
     auxState[index] = value;
   }
-};
 
-unsigned char getNeighbourCount(int x, int y, int z) {
-  unsigned char count = 0;
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k) * gridPadding * gridPadding;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j) * gridPadding;
-      for (int i = -1; i <= 1; i++) {
-        if (k == 0 && j == 0 && i == 0) {
-          continue;
-        }
-        int x_ = x + i;
-        int index = z_ + y_ + x_;
-        count += (cube->grid[index] != 0) ? 1 : 0;
-      }
-    }
+  if (old_state != value) {
+    updateNeighborsCount(auxNeighbourCount, gridPadding, x, y, z,
+                         value == 0 ? -1 : 1);
   }
-  return count;
 };
 
 // wraps around the grid
 unsigned char calculateNextState(int x, int y, int z,
                                  unsigned char current_state, int index) {
 
-  unsigned char neighbourCount = getNeighbourCount(x, y, z);
+  unsigned char neighbourCount = cube->neighbourCount[index];
   if (current_state == 0) {
     if (!(neighbourCount >= 7 && neighbourCount <= 10)) {
       return 0;
@@ -196,6 +194,22 @@ void debugPrintGrid() {
         }
       }
 
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
+};
+
+void debugPrintNeighbourCount() {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
+        int index = z * gridPadding * gridPadding + y * gridPadding + x;
+        fprintf(stdout, "%d ", (int)cube->neighbourCount[index]);
+      }
       fprintf(stdout, "\n");
     }
 
