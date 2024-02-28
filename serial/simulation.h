@@ -5,7 +5,9 @@
 #include "utils.h"
 #include <stdbool.h>
 
-void simulation(Cube *c, int gen_num, int grid_size);
+void initializeAux(Cube *c, int gen_num, int grid_size);
+
+void simulation();
 
 void debugPrintGrid();
 

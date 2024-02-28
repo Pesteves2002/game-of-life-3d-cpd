@@ -8,11 +8,13 @@ Cube *cube;
 int gridSize;
 int gridPadding;
 unsigned char *auxState;
+int genNum;
 
-void simulation(Cube *c, int genNum, int size) {
+void initializeAux(Cube *c, int num, int size) {
   cube = c;
   gridSize = size;
   gridPadding = size + 2;
+  genNum = num;
 
   auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
                                      sizeof(unsigned char));
@@ -26,10 +28,11 @@ void simulation(Cube *c, int genNum, int size) {
   }
 
   updateMaxScores(0);
-
   memcpy(auxState, cube->grid,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+};
 
+void simulation() {
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
     clearLeaderboard();
