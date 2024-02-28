@@ -40,7 +40,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
-        int index = z * N * N + y * N + x;
+        int index = CALC_INDEX(x, y, z, N);
         updateNeighborsCount(cube->cache, cube->side_size, x, y, z,
                              cube->grid[index] == 0 ? 0 : 1);
       }
