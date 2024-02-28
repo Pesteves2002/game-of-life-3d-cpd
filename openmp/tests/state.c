@@ -1,9 +1,6 @@
 #include "../simulation.h"
-
 #include <assert.h>
-#include <omp.h>
 #include <stdio.h>
-#include <string.h>
 
 int SIZE = 3;
 Cube *c;
@@ -81,8 +78,6 @@ void countGrid(int size, int alive, int dead) {
 }
 
 int main() {
-  omp_set_num_threads(1);
-
   // all grids are initialized to 0
   c = gen_initial_grid(SIZE, 0, 0);
   initializeAux(c, 0, SIZE);

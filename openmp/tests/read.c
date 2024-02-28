@@ -1,6 +1,5 @@
 #include "../simulation.h"
 #include <assert.h>
-#include <string.h>
 
 int SIZE = 3;
 Cube *c;
