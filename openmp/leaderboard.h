@@ -3,13 +3,11 @@
 
 #include "utils.h"
 
-void initLeaderboard();
-
 void clearLeaderboard();
 
 void updateMaxScores(int currentGen);
 
-void writeToLeaderboard(unsigned char state);
+void writeToLeaderboard(long long *leaderboardToWrite);
 
 void printLeaderboard();
 

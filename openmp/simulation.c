@@ -20,21 +20,25 @@ void initializeAux(Cube *c, int num, int size) {
   auxNeighbourCount = (unsigned char *)malloc(
       gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 
-  memcpy(auxNeighbours, cube->cache,
-         gridSize * gridSize * gridSize * sizeof(unsigned char));
+#pragma omp parallel
+  {
+    int z, y, x;
+    long long tmpLeaderboard[(N_SPECIES + 1) * 3] = {0};
 
-#pragma omp parallel for
-  for (int z = 0; z < gridSize; z++) {
-    for (int y = 0; y < gridSize; y++) {
-      for (int x = 0; x < gridSize; x++) {
-        int index = CALC_INDEX(x, y, z, gridSize);
-        writeToLeaderboard(readCellState(index));
+#pragma omp for nowait
+    for (z = 1; z < gridPadding - 1; z++) {
+      for (y = 1; y < gridPadding - 1; y++) {
+        for (x = 1; x < gridPadding - 1; x++) {
+          int index = z * gridPadding * gridPadding + y * gridPadding + x;
+          tmpLeaderboard[readCellState(index)]++;
+        }
       }
     }
+
+    writeToLeaderboard(tmpLeaderboard);
   }
 
   updateMaxScores(0);
-}
 
   memcpy(auxState, cube->grid,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
@@ -61,17 +65,26 @@ void simulation() {
 };
 
 void updateGridState() {
-#pragma omp parallel for
-  for (int z = 0; z < gridSize; z++) {
-    for (int y = 0; y < gridSize; y++) {
-      for (int x = 0; x < gridSize; x++) {
-        updateCellState(x, y, z);
+  ; // without this, formatter goes crazy
+#pragma omp parallel
+  {
+    int z, y, x;
+    long long tmpLeaderboard[(N_SPECIES + 1) * 3] = {0};
+
+#pragma omp for nowait
+    for (z = 1; z < gridPadding - 1; z++) {
+      for (y = 1; y < gridPadding - 1; y++) {
+        for (x = 1; x < gridPadding - 1; x++) {
+          tmpLeaderboard[updateCellState(x, y, z)]++;
+        }
       }
     }
+
+    writeToLeaderboard(tmpLeaderboard);
   }
 };
 
-void updateCellState(int x, int y, int z) {
+unsigned char updateCellState(int x, int y, int z) {
   int index = z * gridPadding * gridPadding + y * gridPadding + x;
 
   unsigned char current_state = readCellState(index);
@@ -79,7 +92,7 @@ void updateCellState(int x, int y, int z) {
 
   writeCellState(x, y, z, index, current_state, new_state);
 
-  writeToLeaderboard(new_state);
+  return new_state;
 };
 
 unsigned char readCellState(int index) { return cube->grid[index]; };
