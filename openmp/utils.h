@@ -10,7 +10,7 @@
 typedef struct {
   unsigned long long side_size;
   unsigned char *grid;
-  unsigned char *cache;
+  unsigned char *neighbourCount;
 } Cube;
 
 #define CALC_INDEX(x, y, z, size) ((z) * (size) * (size) + (y) * (size) + (x))

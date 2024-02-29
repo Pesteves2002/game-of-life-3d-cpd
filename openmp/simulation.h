@@ -9,11 +9,13 @@ void initializeAux(Cube *c, int gen_num, int grid_size);
 
 void simulation();
 
-void debugPrintGrid(unsigned char *grid);
+void debugPrintGrid();
+
+void debugPrintNeighbourCount();
 
 void updateGridState();
 
-void updateCellState(int i, int j, int k);
+unsigned char updateCellState(int i, int j, int k);
 
 unsigned char readCellState(int index);
 
