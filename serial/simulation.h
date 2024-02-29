@@ -22,11 +22,11 @@ unsigned char readCellState(int index);
 void writeCellState(int x, int y, int z, int index, unsigned char old_state,
                     unsigned char new_state);
 
-void resetNeighborsCount(int x, int y, int z);
-
 unsigned char calculateNextState(int x, int y, int z,
                                  unsigned char current_state, int index);
 
 unsigned char getMostFrequentValue(int x, int y, int z);
+
+void commitState();
 
 #endif // SIMULATION_H
