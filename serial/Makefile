@@ -23,8 +23,8 @@ CFLAGS := -Wall  -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereferenc
 # warning suppressions
 CFLAGS += -Wno-sign-compare
 
-CFLAGS += -g
-CFLAGS += -Ofast -std=c17
+#CFLAGS += -g
+CFLAGS += -O2 -std=c17
 CFLAGS += $(INCLUDES)
 
 # conversion warnings
