@@ -37,3 +37,10 @@ serial/tests/example
 serial/tests/read
 serial/tests/state
 serial/tests/write
+
+openmp/life3d
+
+openmp/tests/example
+openmp/tests/read
+openmp/tests/state
+openmp/tests/write
