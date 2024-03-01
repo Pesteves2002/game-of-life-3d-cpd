@@ -1,6 +1,6 @@
 #include "../simulation.h"
 
-const int SIZE = 4;
+int SIZE = 4;
 int GENS = 4;
 
 int main() {

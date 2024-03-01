@@ -1,4 +1,5 @@
 #include "simulation.h"
+
 #include <string.h>
 
 Cube *cube;
@@ -20,11 +21,7 @@ void initializeAux(Cube *c, int num, int size) {
   auxNeighbourCount = (unsigned char *)malloc(
       gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 
-
   memcpy(auxState, cube->grid,
-         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
-
-  memcpy(auxNeighbourCount, cube->neighbourCount,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 };
 
@@ -33,10 +30,16 @@ void simulation() {
     for (int y = 1; y < gridPadding - 1; y++) {
       for (int x = 1; x < gridPadding - 1; x++) {
         int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        writeToLeaderboard(readCellState(index));
+        unsigned char value = readCellState(index);
+        writeToLeaderboard(value);
+        updateNeighborsCount(cube->neighbourCount, gridPadding, x, y, z,
+                             value == 0 ? 0 : 1);
       }
     }
   }
+
+  memcpy(auxNeighbourCount, cube->neighbourCount,
+         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 
   updateMaxScores(0);
 
@@ -70,6 +73,7 @@ void updateCellState(int x, int y, int z) {
   int index = z * gridPadding * gridPadding + y * gridPadding + x;
 
   unsigned char current_state = readCellState(index);
+
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
   writeCellState(x, y, z, index, current_state, new_state);
@@ -151,7 +155,7 @@ unsigned char calculateNextState(int x, int y, int z,
 unsigned char getMostFrequentValue(int x, int y, int z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
 
-  int z1 = (z- 1) * gridPadding * gridPadding;
+  int z1 = (z - 1) * gridPadding * gridPadding;
   int z2 = z * gridPadding * gridPadding;
   int z3 = (z + 1) * gridPadding * gridPadding;
   int y1 = (y - 1) * gridPadding;
@@ -191,7 +195,6 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   neighborsValues[cube->grid[z3 + y3 + x2]]++;
   neighborsValues[cube->grid[z3 + y3 + x3]]++;
 
-
   unsigned char mostFrequentValue = 1;
   int maxCount = neighborsValues[1];
   for (int i = 2; i < N_SPECIES + 1; i++) {
@@ -202,6 +205,44 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   }
 
   return mostFrequentValue;
+};
+
+void debugPrintGrid() {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
+        int index = z * gridPadding * gridPadding + y * gridPadding + x;
+        int valueToPrint = (int)cube->grid[index];
+        if (valueToPrint == 0) {
+          fprintf(stdout, "  ");
+        } else {
+          fprintf(stdout, "%d ", valueToPrint);
+        }
+      }
+
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
+};
+
+void debugPrintNeighbourCount() {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
+        int index = z * gridPadding * gridPadding + y * gridPadding + x;
+        fprintf(stdout, "%d ", (int)cube->neighbourCount[index]);
+      }
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
 };
 
 void commitState() {

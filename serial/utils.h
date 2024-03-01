@@ -20,6 +20,4 @@ Cube *gen_initial_grid(long long N, float density, int seed);
 void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
                           int z, unsigned char value);
 
-void debugPrintGrid(Cube *cube, int gridPadding);
-void debugPrintNeighbourCount(Cube *cube, int gridPadding);
 #endif // UTILS_H
