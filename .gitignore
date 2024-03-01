@@ -40,9 +40,9 @@ serial/tests/read
 serial/tests/state
 serial/tests/write
 
-openmp/life3d
+omp/life3d-omp
 
-openmp/tests/example
-openmp/tests/read
-openmp/tests/state
-openmp/tests/write
+omp/tests/example
+omp/tests/read
+omp/tests/state
+omp/tests/write

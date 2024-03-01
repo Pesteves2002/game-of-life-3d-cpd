@@ -9,7 +9,7 @@ SOURCES += $(wildcard */*.c)
 HEADERS := $(wildcard *.h)
 HEADERS += $(wildcard */*.h)
 OBJECTS  := $(SOURCES:.c=.o)
-TARGET_EXECS := life3d
+TARGET_EXECS := life3d-omp
 TARGET_EXECS += tests/read tests/write tests/state tests/example
 
 # VPATH is a variable used by Makefile which finds *sources* and makes them available throughout the codebase
@@ -34,7 +34,7 @@ CFLAGS += $(INCLUDES)
 
 all: $(TARGET_EXECS)
 
-life3d: utils.o simulation.o leaderboard.o
+life3d-omp: utils.o simulation.o leaderboard.o
 
 tests/read:  utils.o simulation.o leaderboard.o
 tests/write: utils.o simulation.o leaderboard.o
@@ -49,7 +49,7 @@ fmt:
 
 test: $(TARGET_EXECS)
 	for x in $(TARGET_EXECS); do \
-		[ "$$x" != "life3d" ] &&\
+		[ "$$x" != "life3d-omp" ] &&\
 		./$$x; \
 	done
 
