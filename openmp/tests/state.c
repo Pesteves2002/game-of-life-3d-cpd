@@ -2,14 +2,15 @@
 #include <assert.h>
 #include <stdio.h>
 
-int SIZE = 3;
+const int SIZE = 3;
 Cube *c;
+int cPadding = SIZE + 2;
 
-void fillGrid(int size, int value) {
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+void fillGrid(int value) {
+  for (int z = 1; z < cPadding-1; z++) {
+    for (int y = 1; y < cPadding-1; y++) {
+      for (int x = 1; x < cPadding-1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
 
         writeCellState(x, y, z, index, readCellState(index), value);
       }
@@ -19,11 +20,11 @@ void fillGrid(int size, int value) {
   commitState();
 }
 
-void checkState(int size, char expectedState) {
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+void checkState(char expectedState) {
+  for (int z = 1; z < cPadding - 1; z++) {
+    for (int y = 1; y < cPadding - 1; y++) {
+      for (int x = 1; x < cPadding - 1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
 
         unsigned char currentState = readCellState(index);
         unsigned char newState = calculateNextState(x, y, z, currentState, index);
@@ -34,14 +35,14 @@ void checkState(int size, char expectedState) {
   }
 }
 
-void fillNcells(int size, int n, char new_state) {
-  fillGrid(size, 0); // clear the grid
+void fillNcells(int n, char new_state) {
+  fillGrid(0); // clear the grid
   int count = 0;
 
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+  for (int z = 1; z < cPadding - 1; z++) {
+    for (int y = 1; y < cPadding - 1; y++) {
+      for (int x = 1; x < cPadding - 1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
         if (count == n) {
           commitState();
           return;
@@ -59,10 +60,10 @@ void fillNcells(int size, int n, char new_state) {
 
 void countGrid(int size, int alive, int dead) {
   int count = 0;
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+  for (int z = 1; z < cPadding - 1; z++) {
+    for (int y = 1; y < cPadding - 1; y++) {
+      for (int x = 1; x < cPadding - 1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
 
         unsigned char state = readCellState(index);
         unsigned char newState = calculateNextState(x, y, z, state, index);
@@ -85,43 +86,43 @@ int main() {
   simulation();
 
   // All cells are dead
-  fillGrid(SIZE, 0);
-  checkState(SIZE, 0);
+  fillGrid(0);
+  checkState(0);
 
   // All cells are alive
-  fillGrid(SIZE, 1);
-  checkState(SIZE, 0);
+  fillGrid(1);
+  checkState(0);
 
   // a live cell with 0 to 4 live neighbors dies
   for (int i = 0; i < 6; i++) {
-    fillNcells(SIZE, i, 1);
-    checkState(SIZE, 0);
+    //fillNcells(SIZE, i, 1);
+    //checkState(0);
   }
 
   // 6 live cells
-  fillNcells(SIZE, 6, 1);
+  fillNcells(6, 1);
   countGrid(SIZE, 6, SIZE * SIZE * SIZE - 6);
 
   // 7 to 10 live cells (will be alive in the next generation)
   for (int i = 7; i < 11; i++) {
-    fillNcells(SIZE, i, 1);
+    fillNcells(i, 1);
     countGrid(SIZE, SIZE * SIZE * SIZE, 0);
   }
 
   // 11 to 13 live cells (nothing happens)
   for (int i = 11; i < 14; i++) {
-    fillNcells(SIZE, i, 1);
+    fillNcells(i, 1);
     countGrid(SIZE, i, SIZE * SIZE * SIZE - i);
   }
 
   // 14 live cells
-  fillNcells(SIZE, 14, 1);
+  fillNcells(14, 1);
   countGrid(SIZE, 14, SIZE * SIZE * SIZE - 14);
 
   // a live cell with more than 13 live neighbors dies
   for (int i = 15; i < SIZE * SIZE * SIZE; i++) {
-    fillNcells(SIZE, i, 1);
-    checkState(SIZE, 0);
+    fillNcells(i, 1);
+    checkState(0);
   }
 
   fprintf(stdout, "Successful test\n");

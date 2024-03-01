@@ -141,3 +141,41 @@ void updateNeighborsCount(unsigned char *cache, long long paddingSize, int x,
     }
   }
 }
+
+void debugPrintGrid(Cube *cube, int gridPadding) {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
+        int index = z * gridPadding * gridPadding + y * gridPadding + x;
+        int valueToPrint = (int)cube->grid[index];
+        if (valueToPrint == 0) {
+          fprintf(stdout, "  ");
+        } else {
+          fprintf(stdout, "%d ", valueToPrint);
+        }
+      }
+
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
+};
+
+void debugPrintNeighbourCount(Cube *cube, int gridPadding) {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
+        int index = z * gridPadding * gridPadding + y * gridPadding + x;
+        fprintf(stdout, "%d ", (int)cube->neighbourCount[index]);
+      }
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
+};

@@ -3,14 +3,15 @@
 #include <assert.h>
 #include <stdio.h>
 
-int SIZE = 3;
+const int SIZE = 3;
 Cube *c;
+int cPadding = SIZE + 2;
 
-void fillGrid(int size, int value) {
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+void fillGrid(int value) {
+  for (int z = 1; z < cPadding - 1; z++) {
+    for (int y = 1; y < cPadding - 1; y++) {
+      for (int x = 1; x < cPadding - 1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
 
         writeCellState(x, y, z, index, readCellState(index), value);
       }
@@ -20,11 +21,11 @@ void fillGrid(int size, int value) {
   commitState();
 }
 
-void checkGrid(int size, unsigned char value) {
-  for (int z = 0; z < size; z++) {
-    for (int y = 0; y < size; y++) {
-      for (int x = 0; x < size; x++) {
-        int index = CALC_INDEX(x, y, z, size);
+void checkGrid(unsigned char value) {
+  for (int z = 1; z < cPadding - 1; z++) {
+    for (int y = 1; y < cPadding - 1; y++) {
+      for (int x = 1; x < cPadding - 1; x++) {
+        int index = CALC_INDEX(x, y, z, cPadding);
 
         assert(readCellState(index) == value);
       }
@@ -39,19 +40,19 @@ int main() {
 
   simulation();
 
-  fillGrid(SIZE, 0);
-  checkGrid(SIZE, 0);
+  fillGrid(0);
+  checkGrid(0);
 
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, i);
-    checkGrid(SIZE, i);
+    fillGrid(i);
+    checkGrid(i);
   }
 
-  fillGrid(SIZE, 0);
+  fillGrid(0);
 
   for (int i = 0; i < 16; i++) {
-    fillGrid(SIZE, i);
-    checkGrid(SIZE, i);
+    fillGrid(i);
+    checkGrid(i);
   }
 
   fprintf(stdout, "Successful test\n");

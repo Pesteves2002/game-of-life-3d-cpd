@@ -247,44 +247,6 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   return mostFrequentValue;
 };
 
-void debugPrintGrid() {
-  for (int z = 0; z < gridPadding; z++) {
-    for (int y = 0; y < gridPadding; y++) {
-      for (int x = 0; x < gridPadding; x++) {
-        int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        int valueToPrint = (int)cube->grid[index];
-        if (valueToPrint == 0) {
-          fprintf(stdout, "  ");
-        } else {
-          fprintf(stdout, "%d ", valueToPrint);
-        }
-      }
-
-      fprintf(stdout, "\n");
-    }
-
-    fprintf(stdout, "||||\n");
-  }
-
-  fprintf(stdout, "---\n");
-};
-
-void debugPrintNeighbourCount() {
-  for (int z = 0; z < gridPadding; z++) {
-    for (int y = 0; y < gridPadding; y++) {
-      for (int x = 0; x < gridPadding; x++) {
-        int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        fprintf(stdout, "%d ", (int)cube->neighbourCount[index]);
-      }
-      fprintf(stdout, "\n");
-    }
-
-    fprintf(stdout, "||||\n");
-  }
-
-  fprintf(stdout, "---\n");
-};
-
 void commitState() {
   memcpy(cube->grid, auxState,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
