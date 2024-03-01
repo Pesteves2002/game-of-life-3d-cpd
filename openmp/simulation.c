@@ -48,40 +48,50 @@ void initializeAux(Cube *c, int num, int size) {
 }
 
 void simulation() {
-  // generations start at 1
-  for (int gen = 1; gen < genNum + 1; gen++) {
-    clearLeaderboard();
+  ; // without this, formatter goes crazy
 
-    updateGridState();
+  clearLeaderboard();
 
-    updateMaxScores(gen);
+  // parallel so we only fork threads once
+#pragma omp parallel
+  {
+    // generations start at 1
+    for (int gen = 1; gen < genNum + 1; gen++) {
+      // The real work (it has a barrier at the end)
+      updateGridState();
 
-    memcpy(cube->grid, auxState,
-           gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+      // Only one thread has to do this. Has implicit barrier
+#pragma omp single
+      {
+        updateMaxScores(gen);
 
-    memcpy(cube->neighbourCount, auxNeighbourCount,
-           gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+        memcpy(cube->grid, auxState,
+               gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
+        memcpy(cube->neighbourCount, auxNeighbourCount,
+               gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
+        clearLeaderboard();
+      }
+    }
   }
 };
 
 void updateGridState() {
-  ; // without this, formatter goes crazy
-#pragma omp parallel
-  {
-    int z, y, x;
-    long long tmpLeaderboard[(N_SPECIES + 1) * 3] = {0};
+  int z, y, x;
+  long long tmpLeaderboard[(N_SPECIES + 1) * 3] = {0};
 
 #pragma omp for nowait
-    for (z = 1; z < gridPadding - 1; z++) {
-      for (y = 1; y < gridPadding - 1; y++) {
-        for (x = 1; x < gridPadding - 1; x++) {
-          tmpLeaderboard[updateCellState(x, y, z)]++;
-        }
+  for (z = 1; z < gridPadding - 1; z++) {
+    for (y = 1; y < gridPadding - 1; y++) {
+      for (x = 1; x < gridPadding - 1; x++) {
+        tmpLeaderboard[updateCellState(x, y, z)]++;
       }
     }
-
-    writeToLeaderboard(tmpLeaderboard);
   }
+
+  writeToLeaderboard(tmpLeaderboard);
+#pragma omp barrier
 };
 
 unsigned char updateCellState(int x, int y, int z) {

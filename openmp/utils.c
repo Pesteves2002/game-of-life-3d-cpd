@@ -36,7 +36,6 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   init_r4uni(input_seed);
 
   // padding in 0 and paddingSize - 1
-#pragma omp parallel for
   for (int z = 0; z < paddingSize; z++) {
     for (int y = 0; y < paddingSize; y++) {
       for (int x = 0; x < paddingSize; x++) {
@@ -91,6 +90,7 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
           index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
           cube->grid[index] = value;
         }
+
         updateNeighborsCount(cube->neighbourCount, paddingSize, x, y, z,
                              value == 0 ? 0 : 1);
       }
