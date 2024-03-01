@@ -18,13 +18,13 @@ vpath %.h $(INCLUDE_DIRS)
 
 LDFLAGS := -fopenmp
 
-CFLAGS := -Wall -Werror -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
+CFLAGS := -Wall  -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 # warning suppressions
 CFLAGS += -Wno-sign-compare
 CFLAGS += -fopenmp
 
 #CFLAGS += -g
-CFLAGS += -Ofast -std=c17
+CFLAGS += -O2 -std=c17
 CFLAGS += $(INCLUDES)
 
 # conversion warnings

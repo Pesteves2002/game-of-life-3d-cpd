@@ -3,8 +3,6 @@
 
 #include "utils.h"
 
-void initLeaderboard();
-
 void clearLeaderboard();
 
 void updateMaxScores(int currentGen);

@@ -16,12 +16,12 @@ TARGET_EXECS += tests/read tests/write tests/state tests/example
 # vpath %.h <DIR> tells make to look for header files in <DIR>
 vpath %.h $(INCLUDE_DIRS)
 
-CFLAGS := -fopenmp
 LDFLAGS := -fopenmp
 
 CFLAGS := -Wall  -Wextra -Wcast-align -Wfloat-equal -Wformat=2 -Wnull-dereference -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wunreachable-code -Wunused
 # warning suppressions
 CFLAGS += -Wno-sign-compare
+CFLAGS += -fopenmp
 
 #CFLAGS += -g
 CFLAGS += -O2 -std=c17
