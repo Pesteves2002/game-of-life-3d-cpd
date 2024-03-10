@@ -84,39 +84,59 @@ void writeCellState(int x, int y, int z, int index, unsigned char old_state,
   int y_ = y == 1 ? gridPadding - 1 : 0;
   int z_ = z == 1 ? gridPadding - 1 : 0;
 
+  int auxIndex;
+
   if (border_x) {
-    index = z * gridPadding * gridPadding + y * gridPadding + x_;
-    auxState[index] = value;
+    auxIndex = z * gridPadding * gridPadding + y * gridPadding + x_;
+    auxState[auxIndex] = value;
+    if (border_y) {
+      auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x;
+      auxState[auxIndex] = value;
+
+      auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x_;
+      auxState[auxIndex] = value;
+
+      if (border_z) {
+        auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
+        auxState[auxIndex] = value;
+
+        auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x_;
+        auxState[auxIndex] = value;
+
+        auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x;
+        auxState[auxIndex] = value;
+
+        auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x_;
+        auxState[auxIndex] = value;
+      }
+      return;
+    }
+    if (border_z) {
+      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
+      auxState[auxIndex] = value;
+
+      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x_;
+      auxState[auxIndex] = value;
+    }
+    return;
   }
 
   if (border_y) {
-    index = z * gridPadding * gridPadding + y_ * gridPadding + x;
-    auxState[index] = value;
+    auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x;
+    auxState[auxIndex] = value;
+    if (border_z) {
+      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
+      auxState[auxIndex] = value;
+
+      auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x;
+      auxState[auxIndex] = value;
+    }
+    return;
   }
 
   if (border_z) {
-    index = z_ * gridPadding * gridPadding + y * gridPadding + x;
-    auxState[index] = value;
-  }
-
-  if (border_x && border_y) {
-    index = z * gridPadding * gridPadding + y_ * gridPadding + x_;
-    auxState[index] = value;
-  }
-
-  if (border_x && border_z) {
-    index = z_ * gridPadding * gridPadding + y * gridPadding + x_;
-    auxState[index] = value;
-  }
-
-  if (border_y && border_z) {
-    index = z_ * gridPadding * gridPadding + y_ * gridPadding + x;
-    auxState[index] = value;
-  }
-
-  if (border_x && border_y && border_z) {
-    index = z_ * gridPadding * gridPadding + y_ * gridPadding + x_;
-    auxState[index] = value;
+    auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
+    auxState[auxIndex] = value;
   }
 };
 
