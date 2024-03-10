@@ -18,6 +18,12 @@ void initializeAux(Cube *c, int num, int size) {
 
   auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
                                      sizeof(unsigned char));
+
+  memcpy(auxState, cube->grid,
+         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+};
+
+void simulation() {
   for (int z = 1; z < gridPadding - 1; z++) {
     for (int y = 1; y < gridPadding - 1; y++) {
       for (int x = 1; x < gridPadding - 1; x++) {
@@ -26,13 +32,7 @@ void initializeAux(Cube *c, int num, int size) {
       }
     }
   }
-
   updateMaxScores(0);
-  memcpy(auxState, cube->grid,
-         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
-};
-
-void simulation() {
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
@@ -65,7 +65,9 @@ void updateCellState(int x, int y, int z) {
 
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
-  writeCellState(x, y, z, index, current_state, new_state);
+  if (current_state != new_state) {
+    writeCellState(x, y, z, index, current_state, new_state);
+  }
 
   writeToLeaderboard(new_state);
 };

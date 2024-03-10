@@ -36,13 +36,13 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
   for (int z = 0; z < paddingSize; z++) {
     for (int y = 0; y < paddingSize; y++) {
       for (int x = 0; x < paddingSize; x++) {
-        int index = z * paddingSize * paddingSize + y * paddingSize + x;
         if (x == 0 || y == 0 || z == 0 || x == paddingSize - 1 ||
             y == paddingSize - 1 || z == paddingSize - 1) {
           continue;
         } else {
           unsigned char value =
               r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
+          int index = z * paddingSize * paddingSize + y * paddingSize + x;
           cube->grid[index] = value;
           writeBorders(cube->grid, paddingSize, x, y, z, value);
         }
