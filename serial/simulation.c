@@ -83,20 +83,46 @@ void writeCellState(int x, int y, int z, int index, unsigned char old_state,
 
 unsigned char getNeighbourCount(int x, int y, int z) {
   unsigned char count = 0;
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k) * gridPadding * gridPadding;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j) * gridPadding;
-      for (int i = -1; i <= 1; i++) {
-        if (k == 0 && j == 0 && i == 0) {
-          continue;
-        }
-        int x_ = x + i;
-        int index = z_ + y_ + x_;
-        count += (cube->grid[index] != 0) ? 1 : 0;
-      }
-    }
-  }
+
+  int z1 = (z - 1) * gridPadding * gridPadding;
+  int z2 = z * gridPadding * gridPadding;
+  int z3 = (z + 1) * gridPadding * gridPadding;
+  int y1 = (y - 1) * gridPadding;
+  int y2 = y * gridPadding;
+  int y3 = (y + 1) * gridPadding;
+  int x1 = x - 1;
+  int x2 = x;
+  int x3 = x + 1;
+
+  count += (cube->grid[z1 + y1 + x1] != 0);
+  count += (cube->grid[z1 + y1 + x2] != 0);
+  count += (cube->grid[z1 + y1 + x3] != 0);
+  count += (cube->grid[z1 + y2 + x1] != 0);
+  count += (cube->grid[z1 + y2 + x2] != 0);
+  count += (cube->grid[z1 + y2 + x3] != 0);
+  count += (cube->grid[z1 + y3 + x1] != 0);
+  count += (cube->grid[z1 + y3 + x2] != 0);
+  count += (cube->grid[z1 + y3 + x3] != 0);
+
+  count += (cube->grid[z2 + y1 + x1] != 0);
+  count += (cube->grid[z2 + y1 + x2] != 0);
+  count += (cube->grid[z2 + y1 + x3] != 0);
+  count += (cube->grid[z2 + y2 + x1] != 0);
+  count += (cube->grid[z2 + y2 + x3] != 0);
+  count += (cube->grid[z2 + y3 + x1] != 0);
+  count += (cube->grid[z2 + y3 + x2] != 0);
+  count += (cube->grid[z2 + y3 + x3] != 0);
+
+  count += (cube->grid[z3 + y1 + x1] != 0);
+  count += (cube->grid[z3 + y1 + x2] != 0);
+  count += (cube->grid[z3 + y1 + x3] != 0);
+  count += (cube->grid[z3 + y2 + x1] != 0);
+  count += (cube->grid[z3 + y2 + x2] != 0);
+  count += (cube->grid[z3 + y2 + x3] != 0);
+  count += (cube->grid[z3 + y3 + x1] != 0);
+  count += (cube->grid[z3 + y3 + x2] != 0);
+  count += (cube->grid[z3 + y3 + x3] != 0);
+
   return count;
 };
 
@@ -118,21 +144,45 @@ unsigned char calculateNextState(int x, int y, int z,
 
 unsigned char getMostFrequentValue(int x, int y, int z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
-  for (int k = -1; k <= 1; k++) {
-    int z_ = (z + k) * gridPadding * gridPadding;
-    for (int j = -1; j <= 1; j++) {
-      int y_ = (y + j) * gridPadding;
-      for (int i = -1; i <= 1; i++) {
-        if (k == 0 && j == 0 && i == 0) {
-          continue;
-        }
-        int x_ = x + i;
-        int index = z_ + y_ + x_;
-        unsigned char value = cube->grid[index];
-        neighborsValues[value]++;
-      }
-    }
-  }
+
+  int z1 = (z - 1) * gridPadding * gridPadding;
+  int z2 = z * gridPadding * gridPadding;
+  int z3 = (z + 1) * gridPadding * gridPadding;
+  int y1 = (y - 1) * gridPadding;
+  int y2 = y * gridPadding;
+  int y3 = (y + 1) * gridPadding;
+  int x1 = x - 1;
+  int x2 = x;
+  int x3 = x + 1;
+
+  neighborsValues[cube->grid[z1 + y1 + x1]]++;
+  neighborsValues[cube->grid[z1 + y1 + x2]]++;
+  neighborsValues[cube->grid[z1 + y1 + x3]]++;
+  neighborsValues[cube->grid[z1 + y2 + x1]]++;
+  neighborsValues[cube->grid[z1 + y2 + x2]]++;
+  neighborsValues[cube->grid[z1 + y2 + x3]]++;
+  neighborsValues[cube->grid[z1 + y3 + x1]]++;
+  neighborsValues[cube->grid[z1 + y3 + x2]]++;
+  neighborsValues[cube->grid[z1 + y3 + x3]]++;
+
+  neighborsValues[cube->grid[z2 + y1 + x1]]++;
+  neighborsValues[cube->grid[z2 + y1 + x2]]++;
+  neighborsValues[cube->grid[z2 + y1 + x3]]++;
+  neighborsValues[cube->grid[z2 + y2 + x1]]++;
+  neighborsValues[cube->grid[z2 + y2 + x3]]++;
+  neighborsValues[cube->grid[z2 + y3 + x1]]++;
+  neighborsValues[cube->grid[z2 + y3 + x2]]++;
+  neighborsValues[cube->grid[z2 + y3 + x3]]++;
+
+  neighborsValues[cube->grid[z3 + y1 + x1]]++;
+  neighborsValues[cube->grid[z3 + y1 + x2]]++;
+  neighborsValues[cube->grid[z3 + y1 + x3]]++;
+  neighborsValues[cube->grid[z3 + y2 + x1]]++;
+  neighborsValues[cube->grid[z3 + y2 + x2]]++;
+  neighborsValues[cube->grid[z3 + y2 + x3]]++;
+  neighborsValues[cube->grid[z3 + y3 + x1]]++;
+  neighborsValues[cube->grid[z3 + y3 + x2]]++;
+  neighborsValues[cube->grid[z3 + y3 + x3]]++;
 
   unsigned char mostFrequentValue = 0;
   int maxCount = 0;
