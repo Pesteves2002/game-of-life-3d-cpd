@@ -76,68 +76,7 @@ void writeCellState(int x, int y, int z, int index, unsigned char old_state,
                     unsigned char value) {
 
   auxState[index] = value;
-  bool border_x = x == 1 || x == gridPadding - 2;
-  bool border_y = y == 1 || y == gridPadding - 2;
-  bool border_z = z == 1 || z == gridPadding - 2;
-
-  int x_ = x == 1 ? gridPadding - 1 : 0;
-  int y_ = y == 1 ? gridPadding - 1 : 0;
-  int z_ = z == 1 ? gridPadding - 1 : 0;
-
-  int auxIndex;
-
-  if (border_x) {
-    auxIndex = z * gridPadding * gridPadding + y * gridPadding + x_;
-    auxState[auxIndex] = value;
-    if (border_y) {
-      auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x;
-      auxState[auxIndex] = value;
-
-      auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x_;
-      auxState[auxIndex] = value;
-
-      if (border_z) {
-        auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
-        auxState[auxIndex] = value;
-
-        auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x_;
-        auxState[auxIndex] = value;
-
-        auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x;
-        auxState[auxIndex] = value;
-
-        auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x_;
-        auxState[auxIndex] = value;
-      }
-      return;
-    }
-    if (border_z) {
-      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
-      auxState[auxIndex] = value;
-
-      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x_;
-      auxState[auxIndex] = value;
-    }
-    return;
-  }
-
-  if (border_y) {
-    auxIndex = z * gridPadding * gridPadding + y_ * gridPadding + x;
-    auxState[auxIndex] = value;
-    if (border_z) {
-      auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
-      auxState[auxIndex] = value;
-
-      auxIndex = z_ * gridPadding * gridPadding + y_ * gridPadding + x;
-      auxState[auxIndex] = value;
-    }
-    return;
-  }
-
-  if (border_z) {
-    auxIndex = z_ * gridPadding * gridPadding + y * gridPadding + x;
-    auxState[auxIndex] = value;
-  }
+  writeBorders(auxState, gridPadding, x, y, z, value);
 };
 
 unsigned char getNeighbourCount(int x, int y, int z) {

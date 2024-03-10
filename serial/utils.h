@@ -22,6 +22,9 @@ typedef struct {
 
 Cube *gen_initial_grid(long long N, float density, int seed);
 
+void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
+                  unsigned char value);
+
 void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
                           int z, unsigned char value);
 
