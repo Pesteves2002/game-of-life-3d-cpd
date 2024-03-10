@@ -33,6 +33,7 @@ void initializeAux(Cube *c, int num, int size) {
 };
 
 void simulation() {
+
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
     clearLeaderboard();
@@ -184,9 +185,9 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
 };
 
 void debugPrintGrid() {
-  for (int z = 1; z < gridPadding - 1; z++) {
-    for (int y = 1; y < gridPadding - 1; y++) {
-      for (int x = 1; x < gridPadding - 1; x++) {
+  for (int z = 0; z < gridPadding; z++) {
+    for (int y = 0; y < gridPadding; y++) {
+      for (int x = 0; x < gridPadding; x++) {
         int index = z * gridPadding * gridPadding + y * gridPadding + x;
         int valueToPrint = (int)cube->grid[index];
         if (valueToPrint == 0) {

@@ -33,7 +33,6 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
 
   init_r4uni(input_seed);
 
-  // padding in 0 and paddingSize - 1
   for (int z = 0; z < paddingSize; z++) {
     for (int y = 0; y < paddingSize; y++) {
       for (int x = 0; x < paddingSize; x++) {
@@ -57,35 +56,53 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
           if (border_x) {
             index = z * paddingSize * paddingSize + y * paddingSize + x_;
             cube->grid[index] = value;
+            if (border_y) {
+              index = z * paddingSize * paddingSize + y_ * paddingSize + x;
+              cube->grid[index] = value;
+
+              index = z * paddingSize * paddingSize + y_ * paddingSize + x_;
+              cube->grid[index] = value;
+
+              if (border_z) {
+                index = z_ * paddingSize * paddingSize + y * paddingSize + x;
+                cube->grid[index] = value;
+
+                index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
+                cube->grid[index] = value;
+
+                index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
+                cube->grid[index] = value;
+
+                index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
+                cube->grid[index] = value;
+              }
+              continue;
+            }
+            if (border_z) {
+              index = z_ * paddingSize * paddingSize + y * paddingSize + x;
+              cube->grid[index] = value;
+
+              index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
+              cube->grid[index] = value;
+            }
+            continue;
           }
 
           if (border_y) {
             index = z * paddingSize * paddingSize + y_ * paddingSize + x;
             cube->grid[index] = value;
+            if (border_z) {
+              index = z_ * paddingSize * paddingSize + y * paddingSize + x;
+              cube->grid[index] = value;
+
+              index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
+              cube->grid[index] = value;
+            }
+            continue;
           }
 
           if (border_z) {
             index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-            cube->grid[index] = value;
-          }
-
-          if (border_x && border_y) {
-            index = z * paddingSize * paddingSize + y_ * paddingSize + x_;
-            cube->grid[index] = value;
-          }
-
-          if (border_x && border_z) {
-            index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
-            cube->grid[index] = value;
-          }
-
-          if (border_y && border_z) {
-            index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
-            cube->grid[index] = value;
-          }
-
-          if (border_x && border_y && border_z) {
-            index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
             cube->grid[index] = value;
           }
         }
