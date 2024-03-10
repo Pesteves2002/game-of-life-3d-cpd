@@ -58,62 +58,43 @@ void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
   bool border_y = y == 1 || y == paddingSize - 2;
   bool border_z = z == 1 || z == paddingSize - 2;
 
-  int index;
+  int x_ = x != 1 ? 0 : (paddingSize - 1);
+  int y_ = y != 1 ? 0 : (paddingSize - 1) * paddingSize;
+  int z_ = z != 1 ? 0 : (paddingSize - 1) * paddingSize * paddingSize;
 
-  int x_ = x == 1 ? paddingSize - 1 : 0;
-  int y_ = y == 1 ? paddingSize - 1 : 0;
-  int z_ = z == 1 ? paddingSize - 1 : 0;
+  y *= paddingSize;
+  z *= paddingSize * paddingSize;
 
   if (border_x) {
-    index = z * paddingSize * paddingSize + y * paddingSize + x_;
-    grid[index] = value;
+    grid[z + y + x_] = value;
     if (border_y) {
-      index = z * paddingSize * paddingSize + y_ * paddingSize + x;
-      grid[index] = value;
-
-      index = z * paddingSize * paddingSize + y_ * paddingSize + x_;
-      grid[index] = value;
-
+      grid[z + y_ + x] = value;
+      grid[z + y_ + x_] = value;
       if (border_z) {
-        index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-        grid[index] = value;
-
-        index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
-        grid[index] = value;
-
-        index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
-        grid[index] = value;
-
-        index = z_ * paddingSize * paddingSize + y_ * paddingSize + x_;
-        grid[index] = value;
+        grid[z_ + y + x] = value;
+        grid[z_ + y + x_] = value;
+        grid[z_ + y_ + x] = value;
+        grid[z_ + y_ + x_] = value;
       }
       return;
     }
     if (border_z) {
-      index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-      grid[index] = value;
-
-      index = z_ * paddingSize * paddingSize + y * paddingSize + x_;
-      grid[index] = value;
+      grid[z_ + y + x] = value;
+      grid[z_ + y + x_] = value;
     }
     return;
   }
 
   if (border_y) {
-    index = z * paddingSize * paddingSize + y_ * paddingSize + x;
-    grid[index] = value;
+    grid[z + y_ + x] = value;
     if (border_z) {
-      index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-      grid[index] = value;
-
-      index = z_ * paddingSize * paddingSize + y_ * paddingSize + x;
-      grid[index] = value;
+      grid[z_ + y + x] = value;
+      grid[z_ + y_ + x] = value;
     }
     return;
   }
 
   if (border_z) {
-    index = z_ * paddingSize * paddingSize + y * paddingSize + x;
-    grid[index] = value;
+    grid[z_ + y + x] = value;
   }
 };
