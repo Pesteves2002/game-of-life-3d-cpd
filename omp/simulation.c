@@ -25,9 +25,10 @@ void initializeAux(Cube *c, int num, int size) {
 
 void simulation() {
   long long tmpLeaderboard[N_SPECIES + 1] = {0};
+
 #pragma omp parallel firstprivate(tmpLeaderboard)
   {
-#pragma omp for
+#pragma omp for nowait
     for (int z = 1; z < gridPadding - 1; z++) {
       for (int y = 1; y < gridPadding - 1; y++) {
         for (int x = 1; x < gridPadding - 1; x++) {
@@ -36,11 +37,9 @@ void simulation() {
         }
       }
     }
-
     writeToLeaderboard(tmpLeaderboard);
   }
   updateMaxScores(0);
-  clearLeaderboard();
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
@@ -51,8 +50,6 @@ void simulation() {
 
     memcpy(cube->grid, auxState,
            gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
-
-    clearLeaderboard();
   }
 };
 
@@ -62,7 +59,7 @@ void updateGridState(){
 
         long long tmpLeaderboard[N_SPECIES + 1] = {0};
 
-#pragma omp for
+#pragma omp for nowait
 for (int z = 1; z < gridPadding - 1; z++) {
   for (int y = 1; y < gridPadding - 1; y++) {
     for (int x = 1; x < gridPadding - 1; x++) {
