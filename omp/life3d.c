@@ -16,8 +16,8 @@ int main(int argc, char *argv[]) {
   int input_seed = atoi(argv[4]);
 
   double exec_time;
-  Cube *cube = gen_initial_grid(grid_size, density, input_seed);
-  initializeAux(cube, gen_num, grid_size);
+  unsigned char *grid = gen_initial_grid(grid_size, density, input_seed);
+  initializeAux(grid, gen_num, grid_size);
 
   exec_time = -omp_get_wtime();
 
