@@ -17,7 +17,12 @@ void updateMaxScores(int current_gen) {
   }
 };
 
-void writeToLeaderboard(unsigned char new_state) { leaderboard[new_state]++; };
+void writeToLeaderboard(long long leaderboardToWrite[N_SPECIES + 1]) {
+  for (int i = 0; i < N_SPECIES + 1; i++) {
+#pragma omp atomic
+    leaderboard[i] += leaderboardToWrite[i];
+  }
+};
 
 void printLeaderboard() {
   for (int i = 1; i < N_SPECIES + 1; i++) {

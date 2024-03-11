@@ -15,7 +15,7 @@ void debugPrintNeighbors();
 
 void updateGridState();
 
-void updateCellState(int i, int j, int k);
+unsigned char updateCellState(int x, int y, int z);
 
 unsigned char readCellState(int index);
 

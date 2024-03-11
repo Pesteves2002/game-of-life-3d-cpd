@@ -24,19 +24,26 @@ void initializeAux(Cube *c, int num, int size) {
 };
 
 void simulation() {
-  for (int z = 1; z < gridPadding - 1; z++) {
-    for (int y = 1; y < gridPadding - 1; y++) {
-      for (int x = 1; x < gridPadding - 1; x++) {
-        int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        writeToLeaderboard(readCellState(index));
+  long long tmpLeaderboard[N_SPECIES + 1] = {0};
+#pragma omp parallel firstprivate(tmpLeaderboard)
+  {
+#pragma omp for
+    for (int z = 1; z < gridPadding - 1; z++) {
+      for (int y = 1; y < gridPadding - 1; y++) {
+        for (int x = 1; x < gridPadding - 1; x++) {
+          int index = z * gridPadding * gridPadding + y * gridPadding + x;
+          tmpLeaderboard[cube->grid[index]]++;
+        }
       }
     }
+
+    writeToLeaderboard(tmpLeaderboard);
   }
   updateMaxScores(0);
+  clearLeaderboard();
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
-    clearLeaderboard();
 
     updateGridState();
 
@@ -44,20 +51,30 @@ void simulation() {
 
     memcpy(cube->grid, auxState,
            gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+
+    clearLeaderboard();
   }
 };
 
-void updateGridState() {
-  for (int z = 1; z < gridPadding - 1; z++) {
-    for (int y = 1; y < gridPadding - 1; y++) {
-      for (int x = 1; x < gridPadding - 1; x++) {
-        updateCellState(x, y, z);
-      }
+void updateGridState(){
+#pragma omp
+    {long long tmpLeaderboard[N_SPECIES + 1] = {0};
+
+#pragma omp for
+for (int z = 1; z < gridPadding - 1; z++) {
+  for (int y = 1; y < gridPadding - 1; y++) {
+    for (int x = 1; x < gridPadding - 1; x++) {
+      tmpLeaderboard[updateCellState(x, y, z)]++;
     }
   }
-};
+}
 
-void updateCellState(int x, int y, int z) {
+writeToLeaderboard(tmpLeaderboard);
+}
+}
+;
+
+unsigned char updateCellState(int x, int y, int z) {
 
   int index = z * gridPadding * gridPadding + y * gridPadding + x;
 
@@ -69,7 +86,7 @@ void updateCellState(int x, int y, int z) {
     writeCellState(x, y, z, index, current_state, new_state);
   }
 
-  writeToLeaderboard(new_state);
+  return new_state;
 };
 
 unsigned char readCellState(int index) { return GET_CELL_INDEX(cube, index); };

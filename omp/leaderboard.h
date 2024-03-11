@@ -9,7 +9,7 @@ void clearLeaderboard();
 
 void updateMaxScores(int currentGen);
 
-void writeToLeaderboard(unsigned char state);
+void writeToLeaderboard(long long leaderboardToWrite[N_SPECIES + 1]);
 
 void printLeaderboard();
 
