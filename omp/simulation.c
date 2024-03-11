@@ -1,9 +1,5 @@
 #include "simulation.h"
 
-#include <string.h>
-
-#include <time.h>
-
 Cube *cube;
 int gridSize;
 int gridPadding;

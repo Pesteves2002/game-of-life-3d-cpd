@@ -4,6 +4,7 @@
 #include "leaderboard.h"
 #include "utils.h"
 #include <stdbool.h>
+#include <string.h>
 
 void initializeAux(Cube *c, int gen_num, int grid_size);
 
