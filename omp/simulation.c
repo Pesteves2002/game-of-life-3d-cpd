@@ -57,8 +57,10 @@ void simulation() {
 };
 
 void updateGridState(){
-#pragma omp
-    {long long tmpLeaderboard[N_SPECIES + 1] = {0};
+#pragma omp parallel
+    {
+
+        long long tmpLeaderboard[N_SPECIES + 1] = {0};
 
 #pragma omp for
 for (int z = 1; z < gridPadding - 1; z++) {
