@@ -30,6 +30,8 @@
 *.app
 
 */life3d
+*/life3d-omp
+*/life3d-mpi
 
 */tests/example
 */tests/read
