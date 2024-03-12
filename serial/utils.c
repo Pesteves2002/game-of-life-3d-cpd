@@ -15,18 +15,12 @@ float r4_uni() {
   return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
 }
 
-Cube *gen_initial_grid(long long N, float density, int input_seed) {
-  Cube *cube = (Cube *)malloc(sizeof(Cube));
-  if (cube == NULL) {
-    printf("Failed to allocate matrix\n");
-    exit(1);
-  }
+unsigned char *gen_initial_grid(long long N, float density, int input_seed) {
 
-  cube->side_size = N;
   long long paddingSize = N + 2;
-  cube->grid = (unsigned char *)calloc(paddingSize * paddingSize * paddingSize,
-                                       sizeof(unsigned char));
-  if (cube->grid == NULL) {
+  unsigned char *grid = (unsigned char *)calloc(
+      paddingSize * paddingSize * paddingSize, sizeof(unsigned char));
+  if (grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
   }
@@ -43,13 +37,13 @@ Cube *gen_initial_grid(long long N, float density, int input_seed) {
           unsigned char value =
               r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
           int index = z * paddingSize * paddingSize + y * paddingSize + x;
-          cube->grid[index] = value;
-          writeBorders(cube->grid, paddingSize, x, y, z, value);
+          grid[index] = value;
+          writeBorders(grid, paddingSize, x, y, z, value);
         }
       }
     }
   }
-  return cube;
+  return grid;
 }
 
 void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
@@ -57,6 +51,9 @@ void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
   bool border_x = x == 1 || x == paddingSize - 2;
   bool border_y = y == 1 || y == paddingSize - 2;
   bool border_z = z == 1 || z == paddingSize - 2;
+  if (!border_x && !border_y && !border_z) {
+    return;
+  }
 
   int x_ = x != 1 ? 0 : (paddingSize - 1);
   int y_ = y != 1 ? 0 : (paddingSize - 1) * paddingSize;

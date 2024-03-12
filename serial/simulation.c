@@ -1,17 +1,15 @@
 #include "simulation.h"
 
-#include <string.h>
-
-#include <time.h>
-
-Cube *cube;
+unsigned char *grid;
 int gridSize;
 int gridPadding;
 unsigned char *auxState;
 int genNum;
 
-void initializeAux(Cube *c, int num, int size) {
-  cube = c;
+long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
+
+void initializeAux(unsigned char *g, int num, int size) {
+  grid = g;
   gridSize = size;
   gridPadding = size + 2;
   genNum = num;
@@ -19,49 +17,46 @@ void initializeAux(Cube *c, int num, int size) {
   auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
                                      sizeof(unsigned char));
 
-  memcpy(auxState, cube->grid,
+  memcpy(auxState, grid,
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 };
 
 void simulation() {
   for (int z = 1; z < gridPadding - 1; z++) {
+    int z_ = z * gridPadding * gridPadding;
     for (int y = 1; y < gridPadding - 1; y++) {
+      int y_ = y * gridPadding;
       for (int x = 1; x < gridPadding - 1; x++) {
-        int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        writeToLeaderboard(readCellState(index));
+        leaderboard[grid[z_ + y_ + x]]++;
       }
     }
   }
+
   updateMaxScores(0);
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
-    clearLeaderboard();
 
-    updateGridState();
+    for (int z = 1; z < gridPadding - 1; z++) {
+      int z_ = z * gridPadding * gridPadding;
+      for (int y = 1; y < gridPadding - 1; y++) {
+        int y_ = y * gridPadding;
+        for (int x = 1; x < gridPadding - 1; x++) {
+          leaderboard[updateCellState(x, y, z, z_ + y_ + x)]++;
+        }
+      }
+    }
 
     updateMaxScores(gen);
 
-    memcpy(cube->grid, auxState,
+    memcpy(grid, auxState,
            gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
   }
 };
 
-void updateGridState() {
-  for (int z = 1; z < gridPadding - 1; z++) {
-    for (int y = 1; y < gridPadding - 1; y++) {
-      for (int x = 1; x < gridPadding - 1; x++) {
-        updateCellState(x, y, z);
-      }
-    }
-  }
-};
+unsigned char updateCellState(int x, int y, int z, int index) {
 
-void updateCellState(int x, int y, int z) {
-
-  int index = z * gridPadding * gridPadding + y * gridPadding + x;
-
-  unsigned char current_state = readCellState(index);
+  unsigned char current_state = grid[index];
 
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
@@ -69,10 +64,8 @@ void updateCellState(int x, int y, int z) {
     writeCellState(x, y, z, index, current_state, new_state);
   }
 
-  writeToLeaderboard(new_state);
+  return new_state;
 };
-
-unsigned char readCellState(int index) { return GET_CELL_INDEX(cube, index); };
 
 void writeCellState(int x, int y, int z, int index, unsigned char old_state,
                     unsigned char value) {
@@ -94,34 +87,34 @@ unsigned char getNeighbourCount(int x, int y, int z) {
   int x2 = x;
   int x3 = x + 1;
 
-  count += (cube->grid[z1 + y1 + x1] != 0);
-  count += (cube->grid[z1 + y1 + x2] != 0);
-  count += (cube->grid[z1 + y1 + x3] != 0);
-  count += (cube->grid[z1 + y2 + x1] != 0);
-  count += (cube->grid[z1 + y2 + x2] != 0);
-  count += (cube->grid[z1 + y2 + x3] != 0);
-  count += (cube->grid[z1 + y3 + x1] != 0);
-  count += (cube->grid[z1 + y3 + x2] != 0);
-  count += (cube->grid[z1 + y3 + x3] != 0);
+  count += (grid[z1 + y1 + x1] != 0);
+  count += (grid[z1 + y1 + x2] != 0);
+  count += (grid[z1 + y1 + x3] != 0);
+  count += (grid[z1 + y2 + x1] != 0);
+  count += (grid[z1 + y2 + x2] != 0);
+  count += (grid[z1 + y2 + x3] != 0);
+  count += (grid[z1 + y3 + x1] != 0);
+  count += (grid[z1 + y3 + x2] != 0);
+  count += (grid[z1 + y3 + x3] != 0);
 
-  count += (cube->grid[z2 + y1 + x1] != 0);
-  count += (cube->grid[z2 + y1 + x2] != 0);
-  count += (cube->grid[z2 + y1 + x3] != 0);
-  count += (cube->grid[z2 + y2 + x1] != 0);
-  count += (cube->grid[z2 + y2 + x3] != 0);
-  count += (cube->grid[z2 + y3 + x1] != 0);
-  count += (cube->grid[z2 + y3 + x2] != 0);
-  count += (cube->grid[z2 + y3 + x3] != 0);
+  count += (grid[z2 + y1 + x1] != 0);
+  count += (grid[z2 + y1 + x2] != 0);
+  count += (grid[z2 + y1 + x3] != 0);
+  count += (grid[z2 + y2 + x1] != 0);
+  count += (grid[z2 + y2 + x3] != 0);
+  count += (grid[z2 + y3 + x1] != 0);
+  count += (grid[z2 + y3 + x2] != 0);
+  count += (grid[z2 + y3 + x3] != 0);
 
-  count += (cube->grid[z3 + y1 + x1] != 0);
-  count += (cube->grid[z3 + y1 + x2] != 0);
-  count += (cube->grid[z3 + y1 + x3] != 0);
-  count += (cube->grid[z3 + y2 + x1] != 0);
-  count += (cube->grid[z3 + y2 + x2] != 0);
-  count += (cube->grid[z3 + y2 + x3] != 0);
-  count += (cube->grid[z3 + y3 + x1] != 0);
-  count += (cube->grid[z3 + y3 + x2] != 0);
-  count += (cube->grid[z3 + y3 + x3] != 0);
+  count += (grid[z3 + y1 + x1] != 0);
+  count += (grid[z3 + y1 + x2] != 0);
+  count += (grid[z3 + y1 + x3] != 0);
+  count += (grid[z3 + y2 + x1] != 0);
+  count += (grid[z3 + y2 + x2] != 0);
+  count += (grid[z3 + y2 + x3] != 0);
+  count += (grid[z3 + y3 + x1] != 0);
+  count += (grid[z3 + y3 + x2] != 0);
+  count += (grid[z3 + y3 + x3] != 0);
 
   return count;
 };
@@ -155,34 +148,34 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
   int x2 = x;
   int x3 = x + 1;
 
-  neighborsValues[cube->grid[z1 + y1 + x1]]++;
-  neighborsValues[cube->grid[z1 + y1 + x2]]++;
-  neighborsValues[cube->grid[z1 + y1 + x3]]++;
-  neighborsValues[cube->grid[z1 + y2 + x1]]++;
-  neighborsValues[cube->grid[z1 + y2 + x2]]++;
-  neighborsValues[cube->grid[z1 + y2 + x3]]++;
-  neighborsValues[cube->grid[z1 + y3 + x1]]++;
-  neighborsValues[cube->grid[z1 + y3 + x2]]++;
-  neighborsValues[cube->grid[z1 + y3 + x3]]++;
+  neighborsValues[grid[z1 + y1 + x1]]++;
+  neighborsValues[grid[z1 + y1 + x2]]++;
+  neighborsValues[grid[z1 + y1 + x3]]++;
+  neighborsValues[grid[z1 + y2 + x1]]++;
+  neighborsValues[grid[z1 + y2 + x2]]++;
+  neighborsValues[grid[z1 + y2 + x3]]++;
+  neighborsValues[grid[z1 + y3 + x1]]++;
+  neighborsValues[grid[z1 + y3 + x2]]++;
+  neighborsValues[grid[z1 + y3 + x3]]++;
 
-  neighborsValues[cube->grid[z2 + y1 + x1]]++;
-  neighborsValues[cube->grid[z2 + y1 + x2]]++;
-  neighborsValues[cube->grid[z2 + y1 + x3]]++;
-  neighborsValues[cube->grid[z2 + y2 + x1]]++;
-  neighborsValues[cube->grid[z2 + y2 + x3]]++;
-  neighborsValues[cube->grid[z2 + y3 + x1]]++;
-  neighborsValues[cube->grid[z2 + y3 + x2]]++;
-  neighborsValues[cube->grid[z2 + y3 + x3]]++;
+  neighborsValues[grid[z2 + y1 + x1]]++;
+  neighborsValues[grid[z2 + y1 + x2]]++;
+  neighborsValues[grid[z2 + y1 + x3]]++;
+  neighborsValues[grid[z2 + y2 + x1]]++;
+  neighborsValues[grid[z2 + y2 + x3]]++;
+  neighborsValues[grid[z2 + y3 + x1]]++;
+  neighborsValues[grid[z2 + y3 + x2]]++;
+  neighborsValues[grid[z2 + y3 + x3]]++;
 
-  neighborsValues[cube->grid[z3 + y1 + x1]]++;
-  neighborsValues[cube->grid[z3 + y1 + x2]]++;
-  neighborsValues[cube->grid[z3 + y1 + x3]]++;
-  neighborsValues[cube->grid[z3 + y2 + x1]]++;
-  neighborsValues[cube->grid[z3 + y2 + x2]]++;
-  neighborsValues[cube->grid[z3 + y2 + x3]]++;
-  neighborsValues[cube->grid[z3 + y3 + x1]]++;
-  neighborsValues[cube->grid[z3 + y3 + x2]]++;
-  neighborsValues[cube->grid[z3 + y3 + x3]]++;
+  neighborsValues[grid[z3 + y1 + x1]]++;
+  neighborsValues[grid[z3 + y1 + x2]]++;
+  neighborsValues[grid[z3 + y1 + x3]]++;
+  neighborsValues[grid[z3 + y2 + x1]]++;
+  neighborsValues[grid[z3 + y2 + x2]]++;
+  neighborsValues[grid[z3 + y2 + x3]]++;
+  neighborsValues[grid[z3 + y3 + x1]]++;
+  neighborsValues[grid[z3 + y3 + x2]]++;
+  neighborsValues[grid[z3 + y3 + x3]]++;
 
   unsigned char mostFrequentValue = 0;
   int maxCount = 0;
@@ -200,7 +193,7 @@ void debugPrintGrid() {
     for (int y = 0; y < gridPadding; y++) {
       for (int x = 0; x < gridPadding; x++) {
         int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        int valueToPrint = (int)cube->grid[index];
+        int valueToPrint = (int)grid[index];
         if (valueToPrint == 0) {
           fprintf(stdout, "  ");
         } else {
@@ -216,3 +209,21 @@ void debugPrintGrid() {
 
   fprintf(stdout, "---\n");
 };
+
+void updateMaxScores(int current_gen) {
+  for (int i = 1; i < N_SPECIES + 1; i++) {
+    if (leaderboard[i] > leaderboard[i + N_SPECIES]) {
+      leaderboard[i + N_SPECIES] = leaderboard[i];
+      leaderboard[i + N_SPECIES * 2] = current_gen;
+    }
+    leaderboard[i] = 0;
+  }
+};
+
+void printLeaderboard() {
+  for (int i = 1; i < N_SPECIES + 1; i++) {
+    fprintf(stdout, "%d %lld %lld\n", i, leaderboard[i + N_SPECIES],
+            leaderboard[i + N_SPECIES * 2]);
+  }
+};
+
