@@ -21,48 +21,48 @@ void initializeAux(unsigned char *g, int num, int size) {
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 };
 
-void simulation(){
+void simulation() {
+  ; // without this, formatter breaks a bit
 
 #pragma omp parallel
-    {
+  {
 #pragma omp for reduction(+ : leaderboard[ : N_SPECIES + 1])
-        for (int z = 1; z < gridPadding - 1;
-             z++){int z_ = z * gridPadding * gridPadding;
-for (int y = 1; y < gridPadding - 1; y++) {
-  int y_ = y * gridPadding;
-  for (int x = 1; x < gridPadding - 1; x++) {
-    leaderboard[grid[z_ + y_ + x]]++;
-  }
-}
-}
-
-#pragma omp single
-updateMaxScores(0);
-
-// generations start at 1
-for (int gen = 1; gen < genNum + 1; gen++) {
-
-#pragma omp for reduction(+ : leaderboard[ : N_SPECIES + 1])
-  for (int z = 1; z < gridPadding - 1; z++) {
-    int z_ = z * gridPadding * gridPadding;
-    for (int y = 1; y < gridPadding - 1; y++) {
-      int y_ = y * gridPadding;
-      for (int x = 1; x < gridPadding - 1; x++) {
-        leaderboard[updateCellState(x, y, z, z_ + y_ + x)]++;
+    for (int z = 1; z < gridPadding - 1; z++) {
+      int z_ = z * gridPadding * gridPadding;
+      for (int y = 1; y < gridPadding - 1; y++) {
+        int y_ = y * gridPadding;
+        for (int x = 1; x < gridPadding - 1; x++) {
+          leaderboard[grid[z_ + y_ + x]]++;
+        }
       }
     }
-  }
-
-#pragma omp single nowait
-  updateMaxScores(gen);
 
 #pragma omp single
-  memcpy(grid, auxState,
-         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
-}
-}
-}
-;
+    updateMaxScores(0);
+
+    // generations start at 1
+    for (int gen = 1; gen < genNum + 1; gen++) {
+
+#pragma omp for reduction(+ : leaderboard[ : N_SPECIES + 1])
+      for (int z = 1; z < gridPadding - 1; z++) {
+        int z_ = z * gridPadding * gridPadding;
+        for (int y = 1; y < gridPadding - 1; y++) {
+          int y_ = y * gridPadding;
+          for (int x = 1; x < gridPadding - 1; x++) {
+            leaderboard[updateCellState(x, y, z, z_ + y_ + x)]++;
+          }
+        }
+      }
+
+#pragma omp single nowait
+      updateMaxScores(gen);
+
+#pragma omp single
+      memcpy(grid, auxState,
+             gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+    }
+  }
+};
 
 unsigned char updateCellState(int x, int y, int z, int index) {
 
@@ -236,4 +236,3 @@ void printLeaderboard() {
             leaderboard[i + N_SPECIES * 2]);
   }
 };
-
