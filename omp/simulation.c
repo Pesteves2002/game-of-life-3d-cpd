@@ -6,6 +6,25 @@ int gridPadding;
 unsigned char *auxState;
 int genNum;
 
+long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
+
+void updateMaxScores(int current_gen) {
+  for (int i = 1; i < N_SPECIES + 1; i++) {
+    if (leaderboard[i] > leaderboard[i + N_SPECIES]) {
+      leaderboard[i + N_SPECIES] = leaderboard[i];
+      leaderboard[i + N_SPECIES * 2] = current_gen;
+    }
+    leaderboard[i] = 0;
+  }
+};
+
+void printLeaderboard() {
+  for (int i = 1; i < N_SPECIES + 1; i++) {
+    fprintf(stdout, "%d %lld %lld\n", i, leaderboard[i + N_SPECIES],
+            leaderboard[i + N_SPECIES * 2]);
+  }
+};
+
 void initializeAux(unsigned char *g, int num, int size) {
   grid = g;
   gridSize = size;
@@ -19,59 +38,50 @@ void initializeAux(unsigned char *g, int num, int size) {
          gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
 };
 
-void simulation() {
-  long long tmpLeaderboard[N_SPECIES + 1] = {0};
+void simulation(){
 
-#pragma omp parallel firstprivate(tmpLeaderboard)
-  {
-#pragma omp for nowait
-    for (int z = 1; z < gridPadding - 1; z++) {
-      for (int y = 1; y < gridPadding - 1; y++) {
-        for (int x = 1; x < gridPadding - 1; x++) {
-          int index = z * gridPadding * gridPadding + y * gridPadding + x;
-          tmpLeaderboard[grid[index]]++;
-        }
-      }
-    }
-    writeToLeaderboard(tmpLeaderboard);
-  }
-  updateMaxScores(0);
-
-  // generations start at 1
-  for (int gen = 1; gen < genNum + 1; gen++) {
-
-    updateGridState();
-
-    updateMaxScores(gen);
-
-    memcpy(grid, auxState,
-           gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
-  }
-};
-
-void updateGridState(){
 #pragma omp parallel
     {
-
-        long long tmpLeaderboard[N_SPECIES + 1] = {0};
-
-#pragma omp for nowait
-for (int z = 1; z < gridPadding - 1; z++) {
-  for (int y = 1; y < gridPadding - 1; y++) {
-    for (int x = 1; x < gridPadding - 1; x++) {
-      tmpLeaderboard[updateCellState(x, y, z)]++;
-    }
+#pragma omp for reduction(+ : leaderboard[ : N_SPECIES + 1])
+        for (int z = 1; z < gridPadding - 1;
+             z++){int z_ = z * gridPadding * gridPadding;
+for (int y = 1; y < gridPadding - 1; y++) {
+  int y_ = y * gridPadding;
+  for (int x = 1; x < gridPadding - 1; x++) {
+    leaderboard[grid[z_ + y_ + x]]++;
   }
 }
+}
 
-writeToLeaderboard(tmpLeaderboard);
+#pragma omp single
+updateMaxScores(0);
+
+// generations start at 1
+for (int gen = 1; gen < genNum + 1; gen++) {
+
+#pragma omp for reduction(+ : leaderboard[ : N_SPECIES + 1])
+  for (int z = 1; z < gridPadding - 1; z++) {
+    int z_ = z * gridPadding * gridPadding;
+    for (int y = 1; y < gridPadding - 1; y++) {
+      int y_ = y * gridPadding;
+      for (int x = 1; x < gridPadding - 1; x++) {
+        leaderboard[updateCellState(x, y, z, z_ + y_ + x)]++;
+      }
+    }
+  }
+
+#pragma omp single nowait
+  updateMaxScores(gen);
+
+#pragma omp single
+  memcpy(grid, auxState,
+         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+}
 }
 }
 ;
 
-unsigned char updateCellState(int x, int y, int z) {
-
-  int index = z * gridPadding * gridPadding + y * gridPadding + x;
+unsigned char updateCellState(int x, int y, int z, int index) {
 
   unsigned char current_state = grid[index];
 

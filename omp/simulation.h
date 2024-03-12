@@ -1,7 +1,6 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "leaderboard.h"
 #include "utils.h"
 #include <stdbool.h>
 #include <string.h>
@@ -16,7 +15,7 @@ void debugPrintNeighbors();
 
 void updateGridState();
 
-unsigned char updateCellState(int x, int y, int z);
+unsigned char updateCellState(int x, int y, int z, int index);
 
 unsigned char readCellState(int index);
 
@@ -29,5 +28,9 @@ unsigned char calculateNextState(int x, int y, int z,
                                  unsigned char current_state, int index);
 
 unsigned char getMostFrequentValue(int x, int y, int z);
+
+void updateMaxScores(int gen_num);
+
+void printLeaderboard();
 
 #endif // SIMULATION_H

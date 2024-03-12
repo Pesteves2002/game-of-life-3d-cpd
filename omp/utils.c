@@ -51,6 +51,9 @@ void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
   bool border_x = x == 1 || x == paddingSize - 2;
   bool border_y = y == 1 || y == paddingSize - 2;
   bool border_z = z == 1 || z == paddingSize - 2;
+  if (!border_x && !border_y && !border_z) {
+    return;
+  }
 
   int x_ = x != 1 ? 0 : (paddingSize - 1);
   int y_ = y != 1 ? 0 : (paddingSize - 1) * paddingSize;
