@@ -12,9 +12,7 @@
 *.pch
 
 # Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+*.so *.dylib *.dll
 
 # Fortran module files
 *.mod
@@ -31,9 +29,11 @@
 *.out
 *.app
 
-serial/life3d
+*/life3d
+*/life3d-omp
+*/life3d-mpi
 
-serial/tests/example
-serial/tests/read
-serial/tests/state
-serial/tests/write
+*/tests/example
+*/tests/read
+*/tests/state
+*/tests/write
