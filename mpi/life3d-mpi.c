@@ -10,21 +10,49 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  MPI_Init(&argc, &argv);
+  if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI initialization error\n");
+    return 1;
+  }
 
   int me, nprocs;
-  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  if (MPI_Comm_size(MPI_COMM_WORLD, &nprocs) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI rank error\n");
+    return 1;
+  }
 
   const int ndims = 3;
   int dims[] = {0, 0, 0};
-  MPI_Dims_create(nprocs, ndims, dims);
-  const int periods[] = {1, 1, 1};
-  const int reorder = 1;
+  if (MPI_Dims_create(nprocs, ndims, dims) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI Dims_create error\n");
+    return 1;
+  }
+  const int periods[] = {true, true, true};
+  const int reorder = true;
 
   MPI_Comm comm_cart;
 
-  MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, periods, reorder, &comm_cart);
-  MPI_Comm_rank(comm_cart, &me);
+  if (MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, periods, reorder,
+                      &comm_cart) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_create error\n");
+    return 1;
+  }
+  if (MPI_Comm_rank(comm_cart, &me) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI rank error\n");
+    return 1;
+  }
+
+  int neighbors_ranks[2];
+
+  MPI_Cart_shift(comm_cart, 0, 1, &neighbors_ranks[0], &neighbors_ranks[1]);
+
+  for (int i = 0; i < 2; i++) {
+    if (neighbors_ranks[i] == MPI_PROC_NULL) {
+      fprintf(stderr, "MPI Cart_shift error\n");
+      return 1;
+    }
+    fprintf(stderr, "Rank %d has neighbor %d\n", me, neighbors_ranks[i]);
+  }
 
   int gen_num = atoi(argv[1]);
   long long grid_size = atoi(argv[2]);
