@@ -15,11 +15,15 @@ float r4_uni() {
   return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
 }
 
-unsigned char *gen_initial_grid(long long N, float density, int input_seed) {
+unsigned char *gen_initial_grid(long long N, float density, int input_seed,
+                                int me, int nprocs) {
 
-  long long paddingSize = N + 2;
-  unsigned char *grid = (unsigned char *)calloc(
-      paddingSize * paddingSize * paddingSize, sizeof(unsigned char));
+  int total = N * N * N;
+  int chunk = total / nprocs;
+  int start = me * chunk;
+  int end = (me + 1) * chunk;
+
+  unsigned char *grid = (unsigned char *)calloc(chunk, sizeof(unsigned char));
   if (grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
@@ -27,22 +31,21 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed) {
 
   init_r4uni(input_seed);
 
-  for (int z = 0; z < paddingSize; z++) {
-    for (int y = 0; y < paddingSize; y++) {
-      for (int x = 0; x < paddingSize; x++) {
-        if (x == 0 || y == 0 || z == 0 || x == paddingSize - 1 ||
-            y == paddingSize - 1 || z == paddingSize - 1) {
-          continue;
-        } else {
-          unsigned char value =
-              r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
-          int index = z * paddingSize * paddingSize + y * paddingSize + x;
-          grid[index] = value;
-          writeBorders(grid, paddingSize, x, y, z, value);
+  int counter = 0;
+
+  for (int z = 0; z < N; z++) {
+    for (int y = 0; y < N; y++) {
+      for (int x = 0; x < N; x++) {
+        unsigned char value =
+            r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
+        if (counter >= start && counter < end) {
+          grid[counter - start] = value;
         }
+        counter++;
       }
     }
   }
+
   return grid;
 }
 

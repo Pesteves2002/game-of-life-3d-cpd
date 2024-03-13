@@ -5,20 +5,24 @@ int gridSize;
 int gridPadding;
 unsigned char *auxState;
 int genNum;
+int me;
+int nprocs;
 
 long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
 
-void initializeAux(unsigned char *g, int num, int size) {
+void initializeAux(unsigned char *g, int num, int size, int m, int procs) {
   grid = g;
   gridSize = size;
   gridPadding = size + 2;
   genNum = num;
+  me = m;
+  nprocs = procs;
 
-  auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
-                                     sizeof(unsigned char));
+  int chunk = gridSize * gridSize * gridSize / nprocs;
+  auxState = (unsigned char *)malloc(chunk * sizeof(unsigned char));
 
   memcpy(auxState, grid,
-         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+         chunk * sizeof(unsigned char)); // copy the initial state to auxState
 };
 
 void simulation() {
@@ -226,4 +230,3 @@ void printLeaderboard() {
             leaderboard[i + N_SPECIES * 2]);
   }
 };
-
