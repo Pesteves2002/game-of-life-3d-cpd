@@ -2,11 +2,12 @@
 #define SIMULATION_H
 
 #include "utils.h"
+#include <mpi.h>
 #include <stdbool.h>
 #include <string.h>
 
 void initializeAux(unsigned char *c, int gen_num, int grid_size, int me,
-                   int num_procs);
+                   int num_procs, MPI_Comm comm);
 
 void simulation();
 
