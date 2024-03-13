@@ -12,7 +12,7 @@
     in
     {
       devShell = pkgs.mkShell {
-        buildInputs = with pkgs; [ git cmake gcc clang-tools_17 valgrind ];
+        buildInputs = with pkgs; [ git cmake gcc clang-tools_17 valgrind openmpi];
      };
     });
 }
