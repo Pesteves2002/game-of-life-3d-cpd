@@ -15,10 +15,10 @@ int main(int argc, char *argv[]) {
   int me, nprocs;
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-  const int ndims = 1;
-  int dims[] = {0};
+  const int ndims = 3;
+  int dims[] = {0, 0, 0};
   MPI_Dims_create(nprocs, ndims, dims);
-  const int periods[] = {1};
+  const int periods[] = {1, 1, 1};
   const int reorder = 1;
 
   MPI_Comm comm_cart;

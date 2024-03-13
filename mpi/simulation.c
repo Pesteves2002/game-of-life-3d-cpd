@@ -11,6 +11,7 @@ MPI_Comm comm_cart;
 unsigned char *upState;
 unsigned char *downState;
 int chunk;
+int coords[3];
 
 long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
 
@@ -23,6 +24,9 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   me = m;
   nprocs = procs;
   comm_cart = comm;
+
+  MPI_Cart_coords(comm_cart, me, 3, coords);
+  printf("coords: %d %d %d\n", coords[0], coords[1], coords[2]);
 
   chunk = gridSize * gridSize * gridSize / nprocs;
   auxState = (unsigned char *)malloc(chunk * sizeof(unsigned char));
