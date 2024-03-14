@@ -217,17 +217,14 @@ void exchangeZ() {
 
   int area_xy =
       (x_size + 2) * (y_size + 2); // +2 accounts for received x and y cells
-                                   // TODO: check if this is correct
 
   unsigned char *payload_neg_z =
       (unsigned char *)malloc(area_xy * sizeof(unsigned char));
   unsigned char *payload_pos_z =
       (unsigned char *)malloc(area_xy * sizeof(unsigned char));
 
-  int count_pos = 0;
-  int count_neg = 0;
-
-  // TODO: add the cells to be sent to the payload
+  memcpy(payload_neg_z, aux_y, area_xy * sizeof(unsigned char));
+  memcpy(payload_pos_z, aux_y + area_xy, area_xy * sizeof(unsigned char));
 
   unsigned char *neg_z =
       (unsigned char *)malloc(area_xy * sizeof(unsigned char));
@@ -248,6 +245,25 @@ void exchangeZ() {
             &requests[3]);
 
   MPI_Waitall(4, requests, statuses);
+
+  if (me == 0) {
+	  printf("neg_z\n");
+    for (int i = 0; i < area_xy; i++) {
+      printf("%d ", neg_z[i]);
+      if ((i + 1) % (2 + x_size) == 0) {
+        printf("\n");
+      }
+    }
+    printf("\n");
+
+    printf("pos_z\n");
+    for (int i = 0; i < area_xy; i++) {
+      printf("%d ", pos_z[i]);
+      if ((i + 1) % (2 + x_size) == 0) {
+	printf("\n");
+      }
+    }
+  }
 
   // TODO: check if the received cells are correct
 }
