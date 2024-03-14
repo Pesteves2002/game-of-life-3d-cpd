@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
   float density = atof(argv[3]);
   int input_seed = atoi(argv[4]);
 
-  unsigned char *grid =
-      gen_initial_grid(grid_size, density, input_seed, me, nprocs);
+  unsigned char *grid = gen_initial_grid(grid_size, density, input_seed, me,
+                                         nprocs, dims, comm_cart);
   initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
 
   double exec_time;
