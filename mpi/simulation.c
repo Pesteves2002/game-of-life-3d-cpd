@@ -107,11 +107,26 @@ void exchangeX() {
   }
 
   int index = 0;
+  // TODO: verify condition
   for (int i = 0; i < num_blocks; i++) {
     while (aux_x[index] != 10) {
       index++;
     }
     aux_x[index] = grid[i];
+  }
+
+  if (me == 0) {
+    for (int i = 0; i < aux_x_size; i++) {
+      printf("%d ", aux_x[i]);
+      if ((i + 1) % (2 + x_size) == 0) {
+        printf("\n");
+      }
+      if (i == aux_x_size / 2 - 1) {
+        printf("\n");
+      }
+    }
+    printf("\n");
+    printf("\n");
   }
 }
 
@@ -131,10 +146,10 @@ void exchangeY() {
   unsigned char *payload_pos_y =
       (unsigned char *)malloc(area_xz * sizeof(unsigned char));
 
-  int count_pos = 0;
-  int count_neg = 0;
-
-  // TODO: add the cells to be sent to the payload
+  int aux_x_size = (2 + x_size) * y_size * z_size;
+  memcpy(payload_neg_y, aux_x, area_xz * sizeof(unsigned char));
+  memcpy(payload_pos_y, aux_x + (aux_x_size - area_xz),
+         area_xz * sizeof(unsigned char));
 
   unsigned char *neg_y =
       (unsigned char *)malloc(area_xz * sizeof(unsigned char));
@@ -157,7 +172,38 @@ void exchangeY() {
 
   MPI_Waitall(4, requests, statuses);
 
-  // TODO: check if the received cells are correct
+  int aux_y_size = (2 + x_size) * (2 + y_size) * z_size;
+  aux_y = (unsigned char *)malloc(aux_y_size * sizeof(unsigned char));
+
+  memset(aux_y, 10, aux_y_size * sizeof(unsigned char));
+  for (int i = 0; i < area_xz / 2; i++) {
+    aux_y[i] = pos_y[i + area_xz / 2];
+    aux_y[i + area_xz + x_size + 2] = pos_y[i];
+
+    aux_y[i + aux_y_size / 2] = neg_y[i + area_xz / 2];
+    aux_y[i + aux_y_size / 2 + area_xz + x_size + 2] = neg_y[i];
+  }
+
+  int index = 0;
+  // TODO: verify condition
+  for (int i = 0; i < num_blocks * 2; i++) {
+    while (aux_y[index] != 10) {
+      index++;
+    }
+    aux_y[index] = aux_x[i];
+  }
+
+  if (me == 0) {
+    for (int i = 0; i < aux_y_size; i++) {
+      printf("%d ", aux_y[i]);
+      if ((i + 1) % (2 + x_size) == 0) {
+        printf("\n");
+      }
+      if (i == aux_y_size / 2 - 1) {
+        printf("\n");
+      }
+    }
+  }
 }
 
 void exchangeZ() {
