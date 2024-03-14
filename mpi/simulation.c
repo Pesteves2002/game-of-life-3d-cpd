@@ -103,6 +103,57 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
 };
 
+void printDebugX() {
+  printf("aux_x\n");
+  printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
+  printf("expected size: %d %d %d\n", x_size + 2, y_size, z_size);
+  for (int i = 0; i < aux_x_size; i++) {
+    if (i % (2 + x_size) == 0 && i != 0) {
+      printf("\n");
+    }
+
+    if (i % ((2 + x_size) * y_size) == 0) {
+      printf("\n");
+    }
+    printf("%d ", aux_x[i]);
+  }
+  printf("\n");
+};
+
+void printDebugY() {
+  printf("aux_y\n");
+  printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
+  printf("expected size: %d %d %d\n", x_size + 2, y_size + 2, z_size);
+  for (int i = 0; i < aux_y_size; i++) {
+    if (i % (2 + x_size) == 0 && i != 0) {
+      printf("\n");
+    }
+
+    if (i % ((2 + x_size) * (y_size + 2)) == 0) {
+      printf("\n");
+    }
+    printf("%d ", aux_y[i]);
+  }
+  printf("\n");
+};
+
+void printDebugZ() {
+  printf("aux_z\n");
+  printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
+  printf("expected size: %d %d %d\n", x_size + 2, y_size + 2, z_size + 2);
+  for (int i = 0; i < aux_z_size; i++) {
+    if (i % (2 + x_size) == 0 && i != 0) {
+      printf("\n");
+    }
+
+    if (i % ((2 + x_size) * (2 + y_size)) == 0) {
+      printf("\n");
+    }
+    printf("%d ", aux_z[i]);
+  }
+  printf("\n");
+};
+
 void exchangeX() {
   int neg_x_rank, pos_x_rank;
 
@@ -143,6 +194,7 @@ void exchangeX() {
     aux_x[i * (2 + x_size) + x_size + 1] = pos_x[i];
   }
 
+  // Fill the rest of the aux_x array with the local grid
   int index = 0;
   for (int i = 0; i < num_blocks; i++) {
     while (aux_x[index] != 10) {
@@ -150,20 +202,8 @@ void exchangeX() {
     }
     aux_x[index] = grid[i];
   }
-
   if (me == 0) {
-    printf("exchnageX\n");
-    for (int i = 0; i < aux_x_size; i++) {
-      printf("%d ", aux_x[i]);
-      if ((i + 1) % (2 + x_size) == 0) {
-        printf("\n");
-      }
-      if (i == aux_x_size / 2 - 1) {
-        printf("\n");
-      }
-    }
-    printf("\n");
-    printf("\n");
+    printDebugX();
   }
 }
 
@@ -176,7 +216,10 @@ void exchangeY() {
     return;
   }
 
+  // Copy the first n nums of the local grid to the payload
   memcpy(payload_neg_y, aux_x, area_xz * sizeof(unsigned char));
+
+  // Copy the last n nums of the local grid to the payload
   memcpy(payload_pos_y, aux_x + (aux_x_size - area_xz),
          area_xz * sizeof(unsigned char));
 
@@ -202,7 +245,7 @@ void exchangeY() {
   }
 
   int index = 0;
-  for (int i = 0; i < (2 + x_size) * y_size * z_size; i++) {
+  for (int i = 0; i < aux_x_size; i++) {
     while (aux_y[index] != 10) {
       index++;
     }
@@ -210,16 +253,7 @@ void exchangeY() {
   }
 
   if (me == 0) {
-    printf("exchnageY\n");
-    for (int i = 0; i < aux_y_size; i++) {
-      printf("%d ", aux_y[i]);
-      if ((i + 1) % (2 + x_size) == 0) {
-        printf("\n");
-      }
-      if (i == aux_y_size / 2 - 1) {
-        printf("\n");
-      }
-    }
+    printDebugY();
   }
 }
 
@@ -254,30 +288,14 @@ void exchangeZ() {
          area_xy * sizeof(unsigned char));
 
   int index = 0;
-  for (int i = 0; i < (2 + x_size) * (2 + y_size) * z_size; i++) {
+  for (int i = 0; i < aux_y_size; i++) {
     while (aux_z[index] != 10) {
       index++;
     }
     aux_z[index] = aux_y[i];
   }
-
   if (me == 0) {
-    printf("exchangeZ\n");
-    for (int i = 0; i < aux_z_size; i++) {
-      printf("%d ", aux_z[i]);
-      if ((i + 1) % (2 + x_size) == 0) {
-        printf("\n");
-      }
-      if (i == aux_z_size / 2 - 1) {
-        printf("\n");
-      }
-      if (i == aux_z_size / 4 - 1) {
-        printf("\n");
-      }
-      if (i == aux_z_size / 4 * 3 - 1) {
-        printf("\n");
-      }
-    }
+    printDebugZ();
   }
 }
 
