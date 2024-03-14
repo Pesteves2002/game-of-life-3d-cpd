@@ -13,7 +13,36 @@ int me;
 int nprocs;
 int num_blocks;
 
+MPI_Request requests[4];
+MPI_Status statuses[4];
+
 int z_size, y_size, x_size; // num of blocks in each dimension
+
+int area_zy;
+int area_xz;
+int area_xy;
+
+unsigned char *payload_neg_x;
+unsigned char *payload_pos_x;
+
+unsigned char *payload_neg_y;
+unsigned char *payload_pos_y;
+
+unsigned char *payload_neg_z;
+unsigned char *payload_pos_z;
+
+unsigned char *neg_x;
+unsigned char *pos_x;
+
+unsigned char *neg_y;
+unsigned char *pos_y;
+
+unsigned char *neg_z;
+unsigned char *pos_z;
+
+int aux_x_size;
+int aux_y_size;
+int aux_z_size;
 
 unsigned char *aux_x;
 unsigned char *aux_y;
@@ -43,9 +72,35 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
          num_blocks *
              sizeof(unsigned char)); // copy the initial state to auxState
 
-  int area_xy = x_size * y_size;
-  int area_xz = x_size * z_size;
-  int area_yz = y_size * z_size;
+  area_zy = z_size * y_size;
+  area_xz = (x_size + 2) * z_size;
+  area_xy = (x_size + 2) * (y_size + 2);
+
+  payload_neg_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
+  payload_pos_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
+
+  payload_neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+  payload_pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+
+  payload_neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+  payload_pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+
+  neg_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
+  pos_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
+
+  neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+  pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+
+  neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+  pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+
+  aux_x_size = (2 + x_size) * y_size * z_size;
+  aux_y_size = (2 + x_size) * (2 + y_size) * z_size;
+  aux_z_size = (2 + x_size) * (2 + y_size) * (2 + z_size);
+
+  aux_x = (unsigned char *)malloc(aux_x_size * sizeof(unsigned char));
+  aux_y = (unsigned char *)malloc(aux_y_size * sizeof(unsigned char));
+  aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
 };
 
 void exchangeX() {
@@ -56,13 +111,6 @@ void exchangeX() {
     fprintf(stderr, "MPI Cart_shift error\n");
     return;
   }
-
-  int area_zy = z_size * y_size;
-
-  unsigned char *payload_neg_x =
-      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-  unsigned char *payload_pos_x =
-      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
 
   int count_pos = 0;
   int count_neg = 0;
@@ -77,14 +125,6 @@ void exchangeX() {
     }
   }
 
-  unsigned char *neg_x =
-      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-  unsigned char *pos_x =
-      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-
-  MPI_Request requests[4];
-  MPI_Status statuses[4];
-
   MPI_Irecv(neg_x, area_zy, MPI_UNSIGNED_CHAR, neg_x_rank, 2, comm_cart,
             &requests[0]);
   MPI_Irecv(pos_x, area_zy, MPI_UNSIGNED_CHAR, pos_x_rank, 1, comm_cart,
@@ -96,9 +136,6 @@ void exchangeX() {
             &requests[3]);
 
   MPI_Waitall(4, requests, statuses);
-
-  int aux_x_size = (2 + x_size) * y_size * z_size;
-  aux_x = (unsigned char *)malloc(aux_x_size * sizeof(unsigned char));
 
   memset(aux_x, 10, aux_x_size * sizeof(unsigned char));
   for (int i = 0; i < area_zy; i++) {
@@ -139,26 +176,9 @@ void exchangeY() {
     return;
   }
 
-  int area_xz = (x_size + 2) * z_size; // +2 accounts for received x cells
-
-  unsigned char *payload_neg_y =
-      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-  unsigned char *payload_pos_y =
-      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-
-  int aux_x_size = (2 + x_size) * y_size * z_size;
   memcpy(payload_neg_y, aux_x, area_xz * sizeof(unsigned char));
   memcpy(payload_pos_y, aux_x + (aux_x_size - area_xz),
          area_xz * sizeof(unsigned char));
-
-  unsigned char *neg_y =
-      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-
-  unsigned char *pos_y =
-      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-
-  MPI_Request requests[4];
-  MPI_Status statuses[4];
 
   MPI_Irecv(neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 2, comm_cart,
             &requests[0]);
@@ -171,9 +191,6 @@ void exchangeY() {
             &requests[3]);
 
   MPI_Waitall(4, requests, statuses);
-
-  int aux_y_size = (2 + x_size) * (2 + y_size) * z_size;
-  aux_y = (unsigned char *)malloc(aux_y_size * sizeof(unsigned char));
 
   memset(aux_y, 10, aux_y_size * sizeof(unsigned char));
   for (int i = 0; i < area_xz / 2; i++) {
@@ -215,24 +232,8 @@ void exchangeZ() {
     return;
   }
 
-  int area_xy =
-      (x_size + 2) * (y_size + 2); // +2 accounts for received x and y cells
-
-  unsigned char *payload_neg_z =
-      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-  unsigned char *payload_pos_z =
-      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-
   memcpy(payload_neg_z, aux_y, area_xy * sizeof(unsigned char));
   memcpy(payload_pos_z, aux_y + area_xy, area_xy * sizeof(unsigned char));
-
-  unsigned char *neg_z =
-      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-  unsigned char *pos_z =
-      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-
-  MPI_Request requests[4];
-  MPI_Status statuses[4];
 
   MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
             &requests[0]);
@@ -246,8 +247,6 @@ void exchangeZ() {
 
   MPI_Waitall(4, requests, statuses);
 
-  int aux_z_size = (2 + x_size) * (2 + y_size) * (2 + z_size);
-  aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
   memset(aux_z, 10, aux_z_size * sizeof(unsigned char));
 
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
