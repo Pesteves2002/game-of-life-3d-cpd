@@ -107,7 +107,6 @@ void exchangeX() {
   }
 
   int index = 0;
-  // TODO: verify condition
   for (int i = 0; i < num_blocks; i++) {
     while (aux_x[index] != 10) {
       index++;
@@ -116,6 +115,7 @@ void exchangeX() {
   }
 
   if (me == 0) {
+    printf("exchnageX\n");
     for (int i = 0; i < aux_x_size; i++) {
       printf("%d ", aux_x[i]);
       if ((i + 1) % (2 + x_size) == 0) {
@@ -185,8 +185,7 @@ void exchangeY() {
   }
 
   int index = 0;
-  // TODO: verify condition
-  for (int i = 0; i < num_blocks * 2; i++) {
+  for (int i = 0; i < (2 + x_size) * y_size * z_size; i++) {
     while (aux_y[index] != 10) {
       index++;
     }
@@ -194,6 +193,7 @@ void exchangeY() {
   }
 
   if (me == 0) {
+    printf("exchnageY\n");
     for (int i = 0; i < aux_y_size; i++) {
       printf("%d ", aux_y[i]);
       if ((i + 1) % (2 + x_size) == 0) {
@@ -251,18 +251,19 @@ void exchangeZ() {
   memset(aux_z, 10, aux_z_size * sizeof(unsigned char));
 
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
-  memcpy(aux_z + area_xy * 3, pos_z, area_xy * sizeof(unsigned char));
+  memcpy(aux_z + (aux_z_size - area_xy), pos_z,
+         area_xy * sizeof(unsigned char));
 
   int index = 0;
-  for (int i = 0; i < num_blocks * 4; i++) {
+  for (int i = 0; i < (2 + x_size) * (2 + y_size) * z_size; i++) {
     while (aux_z[index] != 10) {
       index++;
     }
     aux_z[index] = aux_y[i];
   }
 
-  if (me != 0) {
-    fprintf(stdout, "me: %d\n", me);
+  if (me == 0) {
+    printf("exchangeZ\n");
     for (int i = 0; i < aux_z_size; i++) {
       printf("%d ", aux_z[i]);
       if ((i + 1) % (2 + x_size) == 0) {
