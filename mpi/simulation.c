@@ -13,9 +13,7 @@ int me;
 int nprocs;
 int num_blocks;
 
-int z_size = 1;
-int y_size = 1;
-int x_size = 1;
+int z_size, y_size, x_size;
 
 unsigned char *pos_x;
 unsigned char *neg_x;
@@ -25,13 +23,16 @@ unsigned char *pos_z;
 unsigned char *neg_z;
 
 void initializeAux(unsigned char *g, int num, int size, int m, int procs,
-                   MPI_Comm comm) {
+                   int axis[3], MPI_Comm comm) {
   grid = g;
   grid_size = size;
   genNum = num;
   me = m;
   nprocs = procs;
   comm_cart = comm;
+  x_size = axis[0];
+  y_size = axis[1];
+  z_size = axis[2];
 
   if (MPI_Cart_coords(comm_cart, me, 3, coords) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Cart_coords error\n");
@@ -40,24 +41,6 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   printf("coords: %d %d %d\n", coords[0], coords[1], coords[2]);
 
   num_blocks = grid_size * grid_size * grid_size / nprocs;
-  int total_aux = num_blocks;
-
-  // Calculate the size of the z dimension
-  while (num_blocks / z_size > grid_size * grid_size) {
-    z_size++;
-  }
-
-  num_blocks /= z_size;
-
-  // Calculate the size of the y dimension
-  while (num_blocks / y_size > grid_size) {
-    y_size++;
-  }
-
-  num_blocks /= y_size;
-
-  x_size = num_blocks;
-
   auxState = (unsigned char *)malloc(num_blocks * sizeof(unsigned char));
 
   memcpy(auxState, grid,
@@ -85,6 +68,24 @@ void exchangeMessages() {
     return;
   }
 
+  if (MPI_Cart_shift(comm_cart, 1, 1, &neg_y_rank, &pos_y_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  if (MPI_Cart_shift(comm_cart, 2, 1, &neg_z_rank, &pos_z_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  fprintf(stdout,
+          "Rank: %d, neg_x_rank: %d, pos_x_rank: %d, neg_y_rank: %d, "
+          "pos_y_rank: %d, neg_z_rank: %d, pos_z_rank: %d\n",
+          me, neg_x_rank, pos_x_rank, neg_y_rank, pos_y_rank, neg_z_rank,
+          pos_z_rank);
+
   int area_xy = x_size * y_size * sizeof(unsigned char);
 
   MPI_Request requests[4];
@@ -99,16 +100,6 @@ void exchangeMessages() {
             &requests[3]);
 
   MPI_Waitall(4, requests, statuses);
-
-  fprintf(stdout, "Rank: %d, neg_x: ", me);
-  for (int i = 0; i < area_xy; i++) {
-    fprintf(stdout, "%d ", neg_x[i]);
-  }
-  fprintf(stdout, "\n");
-  for (int i = 0; i < area_xy; i++) {
-    fprintf(stdout, "%d ", pos_x[i]);
-  }
-  fprintf(stdout, "\n");
 }
 
 void simulation() {

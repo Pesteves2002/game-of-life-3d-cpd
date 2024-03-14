@@ -42,18 +42,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int neighbors_ranks[2];
-
-  MPI_Cart_shift(comm_cart, 0, 1, &neighbors_ranks[0], &neighbors_ranks[1]);
-
-  for (int i = 0; i < 2; i++) {
-    if (neighbors_ranks[i] == MPI_PROC_NULL) {
-      fprintf(stderr, "MPI Cart_shift error\n");
-      return 1;
-    }
-    fprintf(stderr, "Rank %d has neighbor %d\n", me, neighbors_ranks[i]);
-  }
-
   int gen_num = atoi(argv[1]);
   long long grid_size = atoi(argv[2]);
   float density = atof(argv[3]);
@@ -61,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   unsigned char *grid =
       gen_initial_grid(grid_size, density, input_seed, me, nprocs);
-  initializeAux(grid, gen_num, grid_size, me, nprocs, comm_cart);
+  initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
 
   double exec_time;
   exec_time = -omp_get_wtime();
