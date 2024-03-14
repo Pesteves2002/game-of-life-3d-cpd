@@ -1,213 +1,148 @@
 #include "simulation.h"
 
 unsigned char *grid;
-int gridSize;
-int gridPadding;
 unsigned char *auxState;
+int grid_size;
 int genNum;
 
 long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
 
-void initializeAux(unsigned char *g, int num, int size) {
-  grid = g;
-  gridSize = size;
-  gridPadding = size + 2;
-  genNum = num;
+MPI_Comm comm_cart;
+int coords[3];
+int me;
+int nprocs;
+int num_blocks;
 
-  auxState = (unsigned char *)malloc(gridPadding * gridPadding * gridPadding *
-                                     sizeof(unsigned char));
+int z_size, y_size, x_size; // num of blocks in each dimension
+
+unsigned char *pos_x;
+unsigned char *neg_x;
+unsigned char *pos_y;
+unsigned char *neg_y;
+unsigned char *pos_z;
+unsigned char *neg_z;
+
+void initializeAux(unsigned char *g, int num, int size, int m, int procs,
+                   int axis[3], MPI_Comm comm) {
+  grid = g;
+  grid_size = size;
+  genNum = num;
+  me = m;
+  nprocs = procs;
+  comm_cart = comm;
+  x_size = grid_size / axis[0];
+  y_size = grid_size / axis[1];
+  z_size = grid_size / axis[2];
+
+  if (MPI_Cart_coords(comm_cart, me, 3, coords) != MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_coords error\n");
+    return;
+  }
+
+  num_blocks = x_size * y_size * z_size;
+  auxState = (unsigned char *)malloc(num_blocks * sizeof(unsigned char));
 
   memcpy(auxState, grid,
-         gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+         num_blocks *
+             sizeof(unsigned char)); // copy the initial state to auxState
+
+  int area_xy = x_size * y_size;
+  int area_xz = x_size * z_size;
+  int area_yz = y_size * z_size;
+
+  pos_x = (unsigned char *)malloc(area_yz * sizeof(unsigned char));
+  neg_x = (unsigned char *)malloc(area_yz * sizeof(unsigned char));
+  pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+  neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+  pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+  neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
 };
 
-void simulation() {
-  for (int z = 1; z < gridPadding - 1; z++) {
-    int z_ = z * gridPadding * gridPadding;
-    for (int y = 1; y < gridPadding - 1; y++) {
-      int y_ = y * gridPadding;
-      for (int x = 1; x < gridPadding - 1; x++) {
-        leaderboard[grid[z_ + y_ + x]]++;
-      }
+void exchangeMessages() {
+  int my_coords[3];
+  MPI_Cart_coords(comm_cart, me, 3, my_coords);
+
+  fprintf(stderr, "me: %d, coords: %d %d %d\n", me, my_coords[0], my_coords[1],
+          my_coords[2]);
+
+  int neg_x_rank, pos_x_rank;
+
+  if (MPI_Cart_shift(comm_cart, 0, 1, &neg_x_rank, &pos_x_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  int zy_size = z_size * y_size;
+
+  unsigned char *payload_neg_x =
+      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+  unsigned char *payload_pos_x =
+      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+
+  int count_pos = 0;
+  int count_neg = 0;
+  for (int i = 0; i < num_blocks; i++) {
+    if (i % x_size == 0) {
+      payload_neg_x[count_neg] = grid[i];
+      count_neg++;
     }
+    if (i % x_size == x_size - 1) {
+      payload_pos_x[count_pos] = grid[i];
+      count_pos++;
+    }
+  }
+
+  unsigned char *neg_x =
+      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+  unsigned char *pos_x =
+      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+
+  MPI_Request requests[4];
+  MPI_Status statuses[4];
+
+  MPI_Irecv(neg_x, zy_size, MPI_UNSIGNED_CHAR, neg_x_rank, 0, comm_cart,
+            &requests[0]);
+  MPI_Irecv(pos_x, zy_size, MPI_UNSIGNED_CHAR, pos_x_rank, 0, comm_cart,
+            &requests[1]);
+  MPI_Isend(payload_neg_x, zy_size, MPI_UNSIGNED_CHAR, neg_x_rank, 0, comm_cart,
+            &requests[2]);
+  MPI_Isend(payload_pos_x, zy_size, MPI_UNSIGNED_CHAR, pos_x_rank, 0, comm_cart,
+            &requests[3]);
+
+  MPI_Waitall(4, requests, statuses);
+}
+
+void simulation() {
+  // Initialize leaderboard with the initial state
+  for (int i = 0; i < num_blocks; i++) {
+    leaderboard[grid[i]]++;
   }
 
   updateMaxScores(0);
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
-
-    for (int z = 1; z < gridPadding - 1; z++) {
-      int z_ = z * gridPadding * gridPadding;
-      for (int y = 1; y < gridPadding - 1; y++) {
-        int y_ = y * gridPadding;
-        for (int x = 1; x < gridPadding - 1; x++) {
-          leaderboard[updateCellState(x, y, z, z_ + y_ + x)]++;
-        }
-      }
-    }
+    exchangeMessages();
 
     updateMaxScores(gen);
 
-    memcpy(grid, auxState,
-           gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+    memcpy(grid, auxState, num_blocks * sizeof(unsigned char));
+
+    MPI_Barrier(comm_cart);
   }
-};
-
-unsigned char updateCellState(int x, int y, int z, int index) {
-
-  unsigned char current_state = grid[index];
-
-  unsigned char new_state = calculateNextState(x, y, z, current_state, index);
-
-  if (current_state != new_state) {
-    writeCellState(x, y, z, index, current_state, new_state);
-  }
-
-  return new_state;
-};
-
-void writeCellState(int x, int y, int z, int index, unsigned char old_state,
-                    unsigned char value) {
-
-  auxState[index] = value;
-  writeBorders(auxState, gridPadding, x, y, z, value);
-};
-
-unsigned char getNeighbourCount(int x, int y, int z) {
-  unsigned char count = 0;
-
-  int z1 = (z - 1) * gridPadding * gridPadding;
-  int z2 = z * gridPadding * gridPadding;
-  int z3 = (z + 1) * gridPadding * gridPadding;
-  int y1 = (y - 1) * gridPadding;
-  int y2 = y * gridPadding;
-  int y3 = (y + 1) * gridPadding;
-  int x1 = x - 1;
-  int x2 = x;
-  int x3 = x + 1;
-
-  count += (grid[z1 + y1 + x1] != 0);
-  count += (grid[z1 + y1 + x2] != 0);
-  count += (grid[z1 + y1 + x3] != 0);
-  count += (grid[z1 + y2 + x1] != 0);
-  count += (grid[z1 + y2 + x2] != 0);
-  count += (grid[z1 + y2 + x3] != 0);
-  count += (grid[z1 + y3 + x1] != 0);
-  count += (grid[z1 + y3 + x2] != 0);
-  count += (grid[z1 + y3 + x3] != 0);
-
-  count += (grid[z2 + y1 + x1] != 0);
-  count += (grid[z2 + y1 + x2] != 0);
-  count += (grid[z2 + y1 + x3] != 0);
-  count += (grid[z2 + y2 + x1] != 0);
-  count += (grid[z2 + y2 + x3] != 0);
-  count += (grid[z2 + y3 + x1] != 0);
-  count += (grid[z2 + y3 + x2] != 0);
-  count += (grid[z2 + y3 + x3] != 0);
-
-  count += (grid[z3 + y1 + x1] != 0);
-  count += (grid[z3 + y1 + x2] != 0);
-  count += (grid[z3 + y1 + x3] != 0);
-  count += (grid[z3 + y2 + x1] != 0);
-  count += (grid[z3 + y2 + x2] != 0);
-  count += (grid[z3 + y2 + x3] != 0);
-  count += (grid[z3 + y3 + x1] != 0);
-  count += (grid[z3 + y3 + x2] != 0);
-  count += (grid[z3 + y3 + x3] != 0);
-
-  return count;
-};
-
-// wraps around the grid
-unsigned char calculateNextState(int x, int y, int z,
-                                 unsigned char current_state, int index) {
-
-  unsigned char neighbourCount = getNeighbourCount(x, y, z);
-  if (current_state == 0) {
-    if (!(neighbourCount >= 7 && neighbourCount <= 10)) {
-      return 0;
-    }
-
-    return getMostFrequentValue(x, y, z);
-  }
-
-  return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
-};
-
-unsigned char getMostFrequentValue(int x, int y, int z) {
-  unsigned char neighborsValues[N_SPECIES + 1] = {0};
-
-  int z1 = (z - 1) * gridPadding * gridPadding;
-  int z2 = z * gridPadding * gridPadding;
-  int z3 = (z + 1) * gridPadding * gridPadding;
-  int y1 = (y - 1) * gridPadding;
-  int y2 = y * gridPadding;
-  int y3 = (y + 1) * gridPadding;
-  int x1 = x - 1;
-  int x2 = x;
-  int x3 = x + 1;
-
-  neighborsValues[grid[z1 + y1 + x1]]++;
-  neighborsValues[grid[z1 + y1 + x2]]++;
-  neighborsValues[grid[z1 + y1 + x3]]++;
-  neighborsValues[grid[z1 + y2 + x1]]++;
-  neighborsValues[grid[z1 + y2 + x2]]++;
-  neighborsValues[grid[z1 + y2 + x3]]++;
-  neighborsValues[grid[z1 + y3 + x1]]++;
-  neighborsValues[grid[z1 + y3 + x2]]++;
-  neighborsValues[grid[z1 + y3 + x3]]++;
-
-  neighborsValues[grid[z2 + y1 + x1]]++;
-  neighborsValues[grid[z2 + y1 + x2]]++;
-  neighborsValues[grid[z2 + y1 + x3]]++;
-  neighborsValues[grid[z2 + y2 + x1]]++;
-  neighborsValues[grid[z2 + y2 + x3]]++;
-  neighborsValues[grid[z2 + y3 + x1]]++;
-  neighborsValues[grid[z2 + y3 + x2]]++;
-  neighborsValues[grid[z2 + y3 + x3]]++;
-
-  neighborsValues[grid[z3 + y1 + x1]]++;
-  neighborsValues[grid[z3 + y1 + x2]]++;
-  neighborsValues[grid[z3 + y1 + x3]]++;
-  neighborsValues[grid[z3 + y2 + x1]]++;
-  neighborsValues[grid[z3 + y2 + x2]]++;
-  neighborsValues[grid[z3 + y2 + x3]]++;
-  neighborsValues[grid[z3 + y3 + x1]]++;
-  neighborsValues[grid[z3 + y3 + x2]]++;
-  neighborsValues[grid[z3 + y3 + x3]]++;
-
-  unsigned char mostFrequentValue = 0;
-  int maxCount = 0;
-  for (int i = 1; i < N_SPECIES + 1; i++) {
-    if (neighborsValues[i] > maxCount) {
-      maxCount = neighborsValues[i];
-      mostFrequentValue = i;
-    }
-  }
-  return mostFrequentValue;
 };
 
 void debugPrintGrid() {
-  for (int z = 0; z < gridPadding; z++) {
-    for (int y = 0; y < gridPadding; y++) {
-      for (int x = 0; x < gridPadding; x++) {
-        int index = z * gridPadding * gridPadding + y * gridPadding + x;
-        int valueToPrint = (int)grid[index];
-        if (valueToPrint == 0) {
-          fprintf(stdout, "  ");
-        } else {
-          fprintf(stdout, "%d ", valueToPrint);
-        }
-      }
-
-      fprintf(stdout, "\n");
+  for (int i = 0; i < num_blocks; i++) {
+    unsigned char current_state = grid[i];
+    if (current_state == 0) {
+      printf(" ");
+    } else {
+      printf("%d", current_state);
     }
-
-    fprintf(stdout, "||||\n");
   }
-
-  fprintf(stdout, "---\n");
+  printf("\n");
 };
 
 void updateMaxScores(int current_gen) {
@@ -226,4 +161,3 @@ void printLeaderboard() {
             leaderboard[i + N_SPECIES * 2]);
   }
 };
-
