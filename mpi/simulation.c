@@ -115,7 +115,11 @@ void printDebugX() {
     if (i % ((2 + x_size) * y_size) == 0) {
       printf("\n");
     }
-    printf("%d ", aux_x[i]);
+    if (aux_x[i] == 0) {
+      printf(" ");
+    } else {
+      printf("%d ", aux_x[i]);
+    }
   }
   printf("\n");
 };
@@ -132,7 +136,11 @@ void printDebugY() {
     if (i % ((2 + x_size) * (y_size + 2)) == 0) {
       printf("\n");
     }
-    printf("%d ", aux_y[i]);
+    if (aux_y[i] == 0) {
+      printf(" ");
+    } else {
+      printf("%d ", aux_y[i]);
+    }
   }
   printf("\n");
 };
@@ -149,7 +157,11 @@ void printDebugZ() {
     if (i % ((2 + x_size) * (2 + y_size)) == 0) {
       printf("\n");
     }
-    printf("%d ", aux_z[i]);
+    if (aux_z[i] == 0) {
+      printf(" ");
+    } else {
+      printf("%d ", aux_z[i]);
+    }
   }
   printf("\n");
 };
