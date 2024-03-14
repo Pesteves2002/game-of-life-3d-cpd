@@ -54,8 +54,9 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed,
             r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
         if (x >= x_min && x < x_max && y >= y_min && y < y_max && z >= z_min &&
             z < z_max) {
-          grid[(z - z_min) * x_size * y_size + (y - y_min) * x_size +
-               (x - x_min)] = value;
+          int index = (z - z_min) * x_size * y_size + (y - y_min) * x_size +
+                      (x - x_min);
+          grid[index] = value;
         }
       }
     }

@@ -15,12 +15,9 @@ int num_blocks;
 
 int z_size, y_size, x_size; // num of blocks in each dimension
 
-unsigned char *pos_x;
-unsigned char *neg_x;
-unsigned char *pos_y;
-unsigned char *neg_y;
-unsigned char *pos_z;
-unsigned char *neg_z;
+unsigned char *aux_x;
+unsigned char *aux_y;
+unsigned char *aux_z;
 
 void initializeAux(unsigned char *g, int num, int size, int m, int procs,
                    int axis[3], MPI_Comm comm) {
@@ -49,22 +46,9 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   int area_xy = x_size * y_size;
   int area_xz = x_size * z_size;
   int area_yz = y_size * z_size;
-
-  pos_x = (unsigned char *)malloc(area_yz * sizeof(unsigned char));
-  neg_x = (unsigned char *)malloc(area_yz * sizeof(unsigned char));
-  pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-  neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-  pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-  neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
 };
 
-void exchangeMessages() {
-  int my_coords[3];
-  MPI_Cart_coords(comm_cart, me, 3, my_coords);
-
-  fprintf(stderr, "me: %d, coords: %d %d %d\n", me, my_coords[0], my_coords[1],
-          my_coords[2]);
-
+void exchangeX() {
   int neg_x_rank, pos_x_rank;
 
   if (MPI_Cart_shift(comm_cart, 0, 1, &neg_x_rank, &pos_x_rank) !=
@@ -73,12 +57,12 @@ void exchangeMessages() {
     return;
   }
 
-  int zy_size = z_size * y_size;
+  int area_zy = z_size * y_size;
 
   unsigned char *payload_neg_x =
-      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
   unsigned char *payload_pos_x =
-      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
 
   int count_pos = 0;
   int count_neg = 0;
@@ -94,23 +78,138 @@ void exchangeMessages() {
   }
 
   unsigned char *neg_x =
-      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
   unsigned char *pos_x =
-      (unsigned char *)malloc(zy_size * sizeof(unsigned char));
+      (unsigned char *)malloc(area_zy * sizeof(unsigned char));
 
   MPI_Request requests[4];
   MPI_Status statuses[4];
 
-  MPI_Irecv(neg_x, zy_size, MPI_UNSIGNED_CHAR, neg_x_rank, 0, comm_cart,
+  MPI_Irecv(neg_x, area_zy, MPI_UNSIGNED_CHAR, neg_x_rank, 2, comm_cart,
             &requests[0]);
-  MPI_Irecv(pos_x, zy_size, MPI_UNSIGNED_CHAR, pos_x_rank, 0, comm_cart,
+  MPI_Irecv(pos_x, area_zy, MPI_UNSIGNED_CHAR, pos_x_rank, 1, comm_cart,
             &requests[1]);
-  MPI_Isend(payload_neg_x, zy_size, MPI_UNSIGNED_CHAR, neg_x_rank, 0, comm_cart,
+
+  MPI_Isend(payload_neg_x, area_zy, MPI_UNSIGNED_CHAR, neg_x_rank, 1, comm_cart,
             &requests[2]);
-  MPI_Isend(payload_pos_x, zy_size, MPI_UNSIGNED_CHAR, pos_x_rank, 0, comm_cart,
+  MPI_Isend(payload_pos_x, area_zy, MPI_UNSIGNED_CHAR, pos_x_rank, 2, comm_cart,
             &requests[3]);
 
   MPI_Waitall(4, requests, statuses);
+
+  int aux_x_size = (2 + x_size) * y_size * z_size;
+  aux_x = (unsigned char *)malloc(aux_x_size * sizeof(unsigned char));
+
+  memset(aux_x, 10, aux_x_size * sizeof(unsigned char));
+  for (int i = 0; i < area_zy; i++) {
+    aux_x[i * (2 + x_size)] = neg_x[i];
+    aux_x[i * (2 + x_size) + x_size + 1] = pos_x[i];
+  }
+
+  int index = 0;
+  for (int i = 0; i < num_blocks; i++) {
+    while (aux_x[index] != 10) {
+      index++;
+    }
+    aux_x[index] = grid[i];
+  }
+}
+
+void exchangeY() {
+  int neg_y_rank, pos_y_rank;
+
+  if (MPI_Cart_shift(comm_cart, 1, 1, &neg_y_rank, &pos_y_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  int area_xz = (x_size + 2) * z_size; // +2 accounts for received x cells
+
+  unsigned char *payload_neg_y =
+      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+  unsigned char *payload_pos_y =
+      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+
+  int count_pos = 0;
+  int count_neg = 0;
+
+  // TODO: add the cells to be sent to the payload
+
+  unsigned char *neg_y =
+      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+
+  unsigned char *pos_y =
+      (unsigned char *)malloc(area_xz * sizeof(unsigned char));
+
+  MPI_Request requests[4];
+  MPI_Status statuses[4];
+
+  MPI_Irecv(neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 2, comm_cart,
+            &requests[0]);
+  MPI_Irecv(pos_y, area_xz, MPI_UNSIGNED_CHAR, pos_y_rank, 1, comm_cart,
+            &requests[1]);
+
+  MPI_Isend(payload_neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 1, comm_cart,
+            &requests[2]);
+  MPI_Isend(payload_pos_y, area_xz, MPI_UNSIGNED_CHAR, pos_y_rank, 2, comm_cart,
+            &requests[3]);
+
+  MPI_Waitall(4, requests, statuses);
+
+  // TODO: check if the received cells are correct
+}
+
+void exchangeZ() {
+  int neg_z_rank, pos_z_rank;
+
+  if (MPI_Cart_shift(comm_cart, 2, 1, &neg_z_rank, &pos_z_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  int area_xy =
+      (x_size + 2) * (y_size + 2); // +2 accounts for received x and y cells
+                                   // TODO: check if this is correct
+
+  unsigned char *payload_neg_z =
+      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+  unsigned char *payload_pos_z =
+      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+
+  int count_pos = 0;
+  int count_neg = 0;
+
+  // TODO: add the cells to be sent to the payload
+
+  unsigned char *neg_z =
+      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+  unsigned char *pos_z =
+      (unsigned char *)malloc(area_xy * sizeof(unsigned char));
+
+  MPI_Request requests[4];
+  MPI_Status statuses[4];
+
+  MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
+            &requests[0]);
+  MPI_Irecv(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 1, comm_cart,
+            &requests[1]);
+
+  MPI_Isend(payload_neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 1, comm_cart,
+            &requests[2]);
+  MPI_Isend(payload_pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 2, comm_cart,
+            &requests[3]);
+
+  MPI_Waitall(4, requests, statuses);
+
+  // TODO: check if the received cells are correct
+}
+
+void exchangeMessages() {
+  exchangeX();
+  exchangeY();
+  exchangeZ();
 }
 
 void simulation() {
