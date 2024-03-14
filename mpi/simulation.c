@@ -246,26 +246,39 @@ void exchangeZ() {
 
   MPI_Waitall(4, requests, statuses);
 
-  if (me == 0) {
-	  printf("neg_z\n");
-    for (int i = 0; i < area_xy; i++) {
-      printf("%d ", neg_z[i]);
+  int aux_z_size = (2 + x_size) * (2 + y_size) * (2 + z_size);
+  aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
+  memset(aux_z, 10, aux_z_size * sizeof(unsigned char));
+
+  memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
+  memcpy(aux_z + area_xy * 3, pos_z, area_xy * sizeof(unsigned char));
+
+  int index = 0;
+  for (int i = 0; i < num_blocks * 4; i++) {
+    while (aux_z[index] != 10) {
+      index++;
+    }
+    aux_z[index] = aux_y[i];
+  }
+
+  if (me != 0) {
+    fprintf(stdout, "me: %d\n", me);
+    for (int i = 0; i < aux_z_size; i++) {
+      printf("%d ", aux_z[i]);
       if ((i + 1) % (2 + x_size) == 0) {
         printf("\n");
       }
-    }
-    printf("\n");
-
-    printf("pos_z\n");
-    for (int i = 0; i < area_xy; i++) {
-      printf("%d ", pos_z[i]);
-      if ((i + 1) % (2 + x_size) == 0) {
-	printf("\n");
+      if (i == aux_z_size / 2 - 1) {
+        printf("\n");
+      }
+      if (i == aux_z_size / 4 - 1) {
+        printf("\n");
+      }
+      if (i == aux_z_size / 4 * 3 - 1) {
+        printf("\n");
       }
     }
   }
-
-  // TODO: check if the received cells are correct
 }
 
 void exchangeMessages() {
