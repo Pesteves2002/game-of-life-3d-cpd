@@ -335,6 +335,7 @@ void exchangeMessages() {
 
 void simulation() {
   // Initialize leaderboard with the initial state
+#pragma omp parallel for reduction(+ : leaderboard[ : N_SPECIES + 1])
   for (int i = 0; i < num_blocks; i++) {
     leaderboard[grid[i]]++;
   }
@@ -350,6 +351,7 @@ void simulation() {
   for (int gen = 1; gen < genNum + 1; gen++) {
     exchangeMessages();
 
+#pragma omp parallel for reduction(+ : leaderboard[ : N_SPECIES + 1])
     for (int z = 1; z < z_size + 1; z++) {
       for (int y = 1; y < y_size + 1; y++) {
         for (int x = 1; x < x_size + 1; x++) {
