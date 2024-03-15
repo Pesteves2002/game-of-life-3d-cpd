@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
 
   // only the master process prints the execution time
   if (me == 0) {
-    // fprintf(stderr, "%.1fs\n", exec_time);
-    // printLeaderboard();
+    fprintf(stderr, "%.1fs\n", exec_time);
+    printLeaderboard();
   }
 
   MPI_Finalize();

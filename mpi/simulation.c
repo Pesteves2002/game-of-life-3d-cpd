@@ -2,7 +2,6 @@
 #include <assert.h>
 
 unsigned char *grid;
-unsigned char *auxState;
 int grid_size;
 int genNum;
 
@@ -67,11 +66,6 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   }
 
   num_blocks = x_size * y_size * z_size;
-  auxState = (unsigned char *)malloc(num_blocks * sizeof(unsigned char));
-
-  memcpy(auxState, grid,
-         num_blocks *
-             sizeof(unsigned char)); // copy the initial state to auxState
 
   area_zy = z_size * y_size;
   area_xz = (x_size + 2) * z_size;
@@ -273,7 +267,7 @@ void exchangeY() {
   }
 
   if (me == 0) {
-    printDebugY();
+    // printDebugY();
   }
 }
 
@@ -289,7 +283,8 @@ void exchangeZ() {
   // Copy the first n nums of the local grid to the payload (layer 0 and layer
   // n-1)
   memcpy(payload_neg_z, aux_y, area_xy * sizeof(unsigned char));
-  memcpy(payload_pos_z, aux_y + aux_y_size -  area_xy, area_xy * sizeof(unsigned char));
+  memcpy(payload_pos_z, aux_y + aux_y_size - area_xy,
+         area_xy * sizeof(unsigned char));
 
   MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
             &requests[0]);
@@ -317,7 +312,18 @@ void exchangeZ() {
     aux_z[index] = aux_y[i];
   }
   if (me == 0) {
-    printDebugZ();
+    // printDebugZ();
+  }
+}
+
+void receiveLeaderboards() {
+  if (me == 0) {
+    MPI_Reduce(MPI_IN_PLACE, leaderboard, (N_SPECIES + 1), MPI_LONG_LONG,
+               MPI_SUM, 0, comm_cart);
+  } else {
+    MPI_Reduce(leaderboard, MPI_IN_PLACE, (N_SPECIES + 1), MPI_LONG_LONG,
+               MPI_SUM, 0, comm_cart);
+    memset(leaderboard, 0, (N_SPECIES + 1) * sizeof(long long));
   }
 }
 
@@ -333,30 +339,189 @@ void simulation() {
     leaderboard[grid[i]]++;
   }
 
-  updateMaxScores(0);
+  receiveLeaderboards();
+  if (me == 0) {
+    updateMaxScores(0);
+  }
+
+  MPI_Barrier(comm_cart);
 
   // generations start at 1
   for (int gen = 1; gen < genNum + 1; gen++) {
     exchangeMessages();
 
-    updateMaxScores(gen);
+    for (int z = 1; z < z_size + 1; z++) {
+      for (int y = 1; y < y_size + 1; y++) {
+        for (int x = 1; x < x_size + 1; x++) {
+          int index = z * (x_size + 2) * (y_size + 2) + y * (x_size + 2) + x;
+          leaderboard[updateCellState(x, y, z, index)]++;
+        }
+      }
+    }
 
-    memcpy(grid, auxState, num_blocks * sizeof(unsigned char));
+    receiveLeaderboards();
+
+    if (me == 0) {
+      updateMaxScores(gen);
+    }
 
     MPI_Barrier(comm_cart);
   }
 };
 
-void debugPrintGrid() {
-  for (int i = 0; i < num_blocks; i++) {
-    unsigned char current_state = grid[i];
-    if (current_state == 0) {
-      printf(" ");
-    } else {
-      printf("%d", current_state);
+unsigned char updateCellState(int x, int y, int z, int index) {
+
+  unsigned char current_state = aux_z[index];
+
+  unsigned char new_state = calculateNextState(x, y, z, current_state, index);
+
+  if (current_state != new_state) {
+    int w = (z - 1) * y_size * x_size + (y - 1) * x_size + (x - 1);
+    grid[w] = new_state;
+  }
+
+  return new_state;
+};
+
+// wraps around the grid
+unsigned char calculateNextState(int x, int y, int z,
+                                 unsigned char current_state, int index) {
+
+  unsigned char neighbourCount = getNeighbourCount(x, y, z);
+  if (current_state == 0) {
+    if (!(neighbourCount >= 7 && neighbourCount <= 10)) {
+      return 0;
+    }
+
+    return getMostFrequentValue(x, y, z);
+  }
+
+  return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
+};
+
+unsigned char getNeighbourCount(int x, int y, int z) {
+  unsigned char count = 0;
+
+  int z_disp = (x_size + 2) * (y_size + 2);
+  int y_disp = x_size + 2;
+
+  int z1 = (z - 1) * z_disp;
+  int z2 = z * z_disp;
+  int z3 = (z + 1) * z_disp;
+  int y1 = (y - 1) * y_disp;
+  int y2 = y * y_disp;
+  int y3 = (y + 1) * y_disp;
+  int x1 = x - 1;
+  int x2 = x;
+  int x3 = x + 1;
+
+  count += (aux_z[z1 + y1 + x1] != 0);
+  count += (aux_z[z1 + y1 + x2] != 0);
+  count += (aux_z[z1 + y1 + x3] != 0);
+  count += (aux_z[z1 + y2 + x1] != 0);
+  count += (aux_z[z1 + y2 + x2] != 0);
+  count += (aux_z[z1 + y2 + x3] != 0);
+  count += (aux_z[z1 + y3 + x1] != 0);
+  count += (aux_z[z1 + y3 + x2] != 0);
+  count += (aux_z[z1 + y3 + x3] != 0);
+
+  count += (aux_z[z2 + y1 + x1] != 0);
+  count += (aux_z[z2 + y1 + x2] != 0);
+  count += (aux_z[z2 + y1 + x3] != 0);
+  count += (aux_z[z2 + y2 + x1] != 0);
+  count += (aux_z[z2 + y2 + x3] != 0);
+  count += (aux_z[z2 + y3 + x1] != 0);
+  count += (aux_z[z2 + y3 + x2] != 0);
+  count += (aux_z[z2 + y3 + x3] != 0);
+
+  count += (aux_z[z3 + y1 + x1] != 0);
+  count += (aux_z[z3 + y1 + x2] != 0);
+  count += (aux_z[z3 + y1 + x3] != 0);
+  count += (aux_z[z3 + y2 + x1] != 0);
+  count += (aux_z[z3 + y2 + x2] != 0);
+  count += (aux_z[z3 + y2 + x3] != 0);
+  count += (aux_z[z3 + y3 + x1] != 0);
+  count += (aux_z[z3 + y3 + x2] != 0);
+  count += (aux_z[z3 + y3 + x3] != 0);
+
+  return count;
+};
+
+unsigned char getMostFrequentValue(int x, int y, int z) {
+  unsigned char neighborsValues[N_SPECIES + 1] = {0};
+  int z_disp = (x_size + 2) * (y_size + 2);
+  int y_disp = x_size + 2;
+
+  int z1 = (z - 1) * z_disp;
+  int z2 = z * z_disp;
+  int z3 = (z + 1) * z_disp;
+  int y1 = (y - 1) * y_disp;
+  int y2 = y * y_disp;
+  int y3 = (y + 1) * y_disp;
+  int x1 = x - 1;
+  int x2 = x;
+  int x3 = x + 1;
+
+  neighborsValues[aux_z[z1 + y1 + x1]]++;
+  neighborsValues[aux_z[z1 + y1 + x2]]++;
+  neighborsValues[aux_z[z1 + y1 + x3]]++;
+  neighborsValues[aux_z[z1 + y2 + x1]]++;
+  neighborsValues[aux_z[z1 + y2 + x2]]++;
+  neighborsValues[aux_z[z1 + y2 + x3]]++;
+  neighborsValues[aux_z[z1 + y3 + x1]]++;
+  neighborsValues[aux_z[z1 + y3 + x2]]++;
+  neighborsValues[aux_z[z1 + y3 + x3]]++;
+
+  neighborsValues[aux_z[z2 + y1 + x1]]++;
+  neighborsValues[aux_z[z2 + y1 + x2]]++;
+  neighborsValues[aux_z[z2 + y1 + x3]]++;
+  neighborsValues[aux_z[z2 + y2 + x1]]++;
+  neighborsValues[aux_z[z2 + y2 + x3]]++;
+  neighborsValues[aux_z[z2 + y3 + x1]]++;
+  neighborsValues[aux_z[z2 + y3 + x2]]++;
+  neighborsValues[aux_z[z2 + y3 + x3]]++;
+
+  neighborsValues[aux_z[z3 + y1 + x1]]++;
+  neighborsValues[aux_z[z3 + y1 + x2]]++;
+  neighborsValues[aux_z[z3 + y1 + x3]]++;
+  neighborsValues[aux_z[z3 + y2 + x1]]++;
+  neighborsValues[aux_z[z3 + y2 + x2]]++;
+  neighborsValues[aux_z[z3 + y2 + x3]]++;
+  neighborsValues[aux_z[z3 + y3 + x1]]++;
+  neighborsValues[aux_z[z3 + y3 + x2]]++;
+  neighborsValues[aux_z[z3 + y3 + x3]]++;
+
+  unsigned char mostFrequentValue = 0;
+  int maxCount = 0;
+  for (int i = 1; i < N_SPECIES + 1; i++) {
+    if (neighborsValues[i] > maxCount) {
+      maxCount = neighborsValues[i];
+      mostFrequentValue = i;
     }
   }
-  printf("\n");
+  return mostFrequentValue;
+};
+
+void debugPrintGrid() {
+  for (int z = 0; z < z_size; z++) {
+    for (int y = 0; y < y_size; y++) {
+      for (int x = 0; x < x_size; x++) {
+        int index = z * y_size * x_size + y * x_size + x;
+        int valueToPrint = (int)grid[index];
+        if (valueToPrint == 0) {
+          fprintf(stdout, " ");
+        } else {
+          fprintf(stdout, "%d ", valueToPrint);
+        }
+      }
+
+      fprintf(stdout, "\n");
+    }
+
+    fprintf(stdout, "||||\n");
+  }
+
+  fprintf(stdout, "---\n");
 };
 
 void updateMaxScores(int current_gen) {
