@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
   }
 
   int gen_num = atoi(argv[1]);
-  long long grid_size = atoi(argv[2]);
+  long long grid_size = atoll(argv[2]);
   float density = atof(argv[3]);
   int input_seed = atoi(argv[4]);
 
