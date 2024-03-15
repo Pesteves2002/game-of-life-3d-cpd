@@ -23,7 +23,7 @@ LDFLAGS := -fopenmp
 # warning suppressions
 #CFLAGS += -Wno-sign-compare
 
-#CFLAGS += -g
+CFLAGS += -g
 CFLAGS += -O2 -std=c17
 CFLAGS += $(INCLUDES)
 

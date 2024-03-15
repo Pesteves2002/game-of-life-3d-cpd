@@ -29,6 +29,8 @@ void resetNeighborsCount(int x, int y, int z);
 unsigned char calculateNextState(int x, int y, int z,
                                  unsigned char current_state, int index);
 
+unsigned char getNeighbourCount(int x, int y, int z);
+
 unsigned char getMostFrequentValue(int x, int y, int z);
 
 void updateMaxScores(int gen_num);
