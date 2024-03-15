@@ -1,4 +1,5 @@
 #include "simulation.h"
+#include <assert.h>
 
 unsigned char *grid;
 unsigned char *auxState;
@@ -116,9 +117,9 @@ void printDebugX() {
       printf("\n");
     }
     if (aux_x[i] == 0) {
-      printf(" ");
+      printf("0");
     } else {
-      printf("%d ", aux_x[i]);
+      printf("%d", aux_x[i]);
     }
   }
   printf("\n");
@@ -137,9 +138,9 @@ void printDebugY() {
       printf("\n");
     }
     if (aux_y[i] == 0) {
-      printf(" ");
+      printf("0");
     } else {
-      printf("%d ", aux_y[i]);
+      printf("%d", aux_y[i]);
     }
   }
   printf("\n");
@@ -155,7 +156,7 @@ void printDebugZ() {
     }
 
     if (i % ((2 + x_size) * (2 + y_size)) == 0) {
-      printf("\n");
+      printf("||||\n");
     }
     if (aux_z[i] == 0) {
       printf(" ");
@@ -215,7 +216,7 @@ void exchangeX() {
     aux_x[index] = grid[i];
   }
   if (me == 0) {
-    printDebugX();
+    // printDebugX();
   }
 }
 
@@ -228,12 +229,18 @@ void exchangeY() {
     return;
   }
 
-  // Copy the first n nums of the local grid to the payload
-  memcpy(payload_neg_y, aux_x, area_xz * sizeof(unsigned char));
-
-  // Copy the last n nums of the local grid to the payload
-  memcpy(payload_pos_y, aux_x + (aux_x_size - area_xz),
-         area_xz * sizeof(unsigned char));
+  int count_neg = 0;
+  int count_pos = 0;
+  for (int z = 0; z < z_size; z++) {
+    for (int x = 0; x < (x_size + 2); x++) {
+      int index = z * (x_size + 2) * y_size + x;
+      payload_neg_y[count_neg] = aux_x[index];
+      count_neg++;
+      index = (z + 1) * (x_size + 2) * y_size - (x_size + 2) + x;
+      payload_pos_y[count_pos] = aux_x[index];
+      count_pos++;
+    }
+  }
 
   MPI_Irecv(neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 2, comm_cart,
             &requests[0]);
@@ -248,12 +255,13 @@ void exchangeY() {
   MPI_Waitall(4, requests, statuses);
 
   memset(aux_y, 10, aux_y_size * sizeof(unsigned char));
-  for (int i = 0; i < area_xz / 2; i++) {
-    aux_y[i] = pos_y[i + area_xz / 2];
-    aux_y[i + area_xz + x_size + 2] = pos_y[i];
-
-    aux_y[i + aux_y_size / 2] = neg_y[i + area_xz / 2];
-    aux_y[i + aux_y_size / 2 + area_xz + x_size + 2] = neg_y[i];
+  for (int z = 0; z < z_size; z++) {
+    for (int x = 0; x < (x_size + 2); x++) {
+      int index = z * (x_size + 2) * (y_size + 2) + x;
+      aux_y[index] = neg_y[z * (x_size + 2) + x];
+      index = (z + 1) * (x_size + 2) * (y_size + 2) - (x_size + 2) + x;
+      aux_y[index] = pos_y[z * (x_size + 2) + x];
+    }
   }
 
   int index = 0;
@@ -278,8 +286,10 @@ void exchangeZ() {
     return;
   }
 
+  // Copy the first n nums of the local grid to the payload (layer 0 and layer
+  // n-1)
   memcpy(payload_neg_z, aux_y, area_xy * sizeof(unsigned char));
-  memcpy(payload_pos_z, aux_y + area_xy, area_xy * sizeof(unsigned char));
+  memcpy(payload_pos_z, aux_y + aux_y_size -  area_xy, area_xy * sizeof(unsigned char));
 
   MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
             &requests[0]);
