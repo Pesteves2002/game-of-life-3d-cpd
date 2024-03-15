@@ -27,16 +27,16 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed) {
 
   init_r4uni(input_seed);
 
-  for (int z = 0; z < paddingSize; z++) {
-    for (int y = 0; y < paddingSize; y++) {
-      for (int x = 0; x < paddingSize; x++) {
+  for (long long z = 0; z < paddingSize; z++) {
+    for (long long y = 0; y < paddingSize; y++) {
+      for (long long x = 0; x < paddingSize; x++) {
         if (x == 0 || y == 0 || z == 0 || x == paddingSize - 1 ||
             y == paddingSize - 1 || z == paddingSize - 1) {
           continue;
         } else {
           unsigned char value =
               r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
-          int index = z * paddingSize * paddingSize + y * paddingSize + x;
+          long long index = z * paddingSize * paddingSize + y * paddingSize + x;
           grid[index] = value;
           writeBorders(grid, paddingSize, x, y, z, value);
         }
@@ -46,8 +46,8 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed) {
   return grid;
 }
 
-void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
-                  unsigned char value) {
+void writeBorders(unsigned char *grid, long long paddingSize, long long x,
+                  long long y, long long z, unsigned char value) {
   bool border_x = x == 1 || x == paddingSize - 2;
   bool border_y = y == 1 || y == paddingSize - 2;
   bool border_z = z == 1 || z == paddingSize - 2;
@@ -55,9 +55,9 @@ void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
     return;
   }
 
-  int x_ = x != 1 ? 0 : (paddingSize - 1);
-  int y_ = y != 1 ? 0 : (paddingSize - 1) * paddingSize;
-  int z_ = z != 1 ? 0 : (paddingSize - 1) * paddingSize * paddingSize;
+  long long x_ = x != 1 ? 0 : (paddingSize - 1);
+  long long y_ = y != 1 ? 0 : (paddingSize - 1) * paddingSize;
+  long long z_ = z != 1 ? 0 : (paddingSize - 1) * paddingSize * paddingSize;
 
   y *= paddingSize;
   z *= paddingSize * paddingSize;
