@@ -54,12 +54,17 @@ void simulation() {
         }
       }
 
-#pragma omp single nowait
-      updateMaxScores(gen);
-
-#pragma omp single
-      memcpy(grid, auxState,
-             gridPadding * gridPadding * gridPadding * sizeof(unsigned char));
+#pragma omp sections
+      {
+#pragma omp section
+        { updateMaxScores(gen); }
+#pragma omp section
+        {
+          memcpy(grid, auxState,
+                 gridPadding * gridPadding * gridPadding *
+                     sizeof(unsigned char));
+        }
+      }
     }
   }
 };
