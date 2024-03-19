@@ -48,6 +48,8 @@ unsigned char *aux_x;
 unsigned char *aux_y;
 unsigned char *aux_z;
 
+int chunk_size;
+
 void initializeAux(unsigned char *g, int num, int size, int m, int procs,
                    int axis[1], MPI_Comm comm) {
   grid = g;
@@ -61,10 +63,13 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
 
   int remainder = size % nprocs; // remainder
 
-  int chunk_size =
+  chunk_size =
       (remainder >= nprocs - me) ? guaranteed_chunk + 1 : guaranteed_chunk;
 
-  int area_xy = (size + 2) * (size + 2);
+  long long paddingSize = size + 2;
+  x_size = paddingSize;
+  y_size = paddingSize;
+  area_xy = paddingSize * paddingSize;
 
   if (MPI_Cart_coords(comm_cart, me, 3, coords) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Cart_coords error\n");
@@ -77,7 +82,7 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
   pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
 
-  aux_z_size = (size + 2) * (size + 2) * (size + 2);
+  aux_z_size = paddingSize * paddingSize * (chunk_size + 2);
   aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
 };
 
@@ -113,9 +118,13 @@ void exchangeZ() {
 
   // Copy the first n nums of the local grid to the payload (layer 0 and layer
   // n-1)
-  memcpy(payload_neg_z, aux_y, area_xy * sizeof(unsigned char));
-  memcpy(payload_pos_z, aux_y + aux_y_size - area_xy,
+  memcpy(payload_neg_z, grid, area_xy * sizeof(unsigned char));
+
+  int last_layer_index =
+      (chunk_size * area_xy) - area_xy; // index of the last layer
+  memcpy(payload_pos_z, grid + last_layer_index,
          area_xy * sizeof(unsigned char));
+
 
   MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
             &requests[0]);
@@ -132,16 +141,32 @@ void exchangeZ() {
   memset(aux_z, 10, aux_z_size * sizeof(unsigned char));
 
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
+
   memcpy(aux_z + (aux_z_size - area_xy), pos_z,
          area_xy * sizeof(unsigned char));
 
   int index = 0;
-  for (int i = 0; i < aux_y_size; i++) {
+  for (int i = 0; i < chunk_size * (grid_size + 2) * (grid_size + 2); i++) {
     while (aux_z[index] != 10) {
       index++;
     }
-    aux_z[index] = aux_y[i];
+    aux_z[index] = grid[i];
   }
+
+  // if (me == 0) {
+  //   fprintf(stdout, "aux_z\n");
+  //   for (int i = 0; i < aux_z_size; i++) {
+  //     if (i % (grid_size + 2) == 0 && i != 0) {
+  //       fprintf(stdout, "\n");
+  //     }
+  //     if (i % (area_xy) == 0) {
+  //       fprintf(stdout, "||||\n");
+  //     }
+  //
+  //     fprintf(stdout, "%d ", aux_z[i]);
+  //   }
+  //   fprintf(stdout, "\n\n");
+  // }
   if (me == 0) {
     // printDebugZ();
   }
@@ -166,8 +191,14 @@ void exchangeMessages() {
 
 void simulation() {
   // Initialize leaderboard with the initial state
-  for (int i = 0; i < num_blocks; i++) {
-    leaderboard[grid[i]]++;
+  for (int z = 0; z < chunk_size; z++) {
+    for (int y = 1; y < grid_size + 1; y++) {
+      for (int x = 1; x < grid_size + 1; x++) {
+        int index =
+            z * (grid_size + 2) * (grid_size + 2) + y * (grid_size + 2) + x;
+        leaderboard[grid[index]]++;
+      }
+    }
   }
 
   receiveLeaderboards();
@@ -181,10 +212,12 @@ void simulation() {
   for (int gen = 1; gen < genNum + 1; gen++) {
     exchangeMessages();
 
-    for (int z = 1; z < z_size + 1; z++) {
-      for (int y = 1; y < y_size + 1; y++) {
-        for (int x = 1; x < x_size + 1; x++) {
-          int index = z * (x_size + 2) * (y_size + 2) + y * (x_size + 2) + x;
+    // iterate over the aux_z
+    for (int z = 1; z < chunk_size +  1 ; z++) {
+      for (int y = 1; y < grid_size + 1; y++) {
+        for (int x = 1; x < grid_size + 1; x++) {
+          int index = (z) * (grid_size + 2) * (grid_size + 2) +
+		      (y ) * (grid_size + 2) + x;
           leaderboard[updateCellState(x, y, z, index)]++;
         }
       }
@@ -201,14 +234,14 @@ void simulation() {
 };
 
 unsigned char updateCellState(int x, int y, int z, int index) {
-
   unsigned char current_state = aux_z[index];
 
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
   if (current_state != new_state) {
-    int w = (z - 1) * y_size * x_size + (y - 1) * x_size + (x - 1);
+	  int w = (z - 1) * (grid_size + 2) * (grid_size + 2) + (y) * (grid_size + 2) + (x);
     grid[w] = new_state;
+    writeBorders(grid, x_size,  x, y, z-1, new_state);
   }
 
   return new_state;
@@ -233,8 +266,8 @@ unsigned char calculateNextState(int x, int y, int z,
 unsigned char getNeighbourCount(int x, int y, int z) {
   unsigned char count = 0;
 
-  int z_disp = (x_size + 2) * (y_size + 2);
-  int y_disp = x_size + 2;
+  int z_disp = x_size * y_size;
+  int y_disp = x_size;
 
   int z1 = (z - 1) * z_disp;
   int z2 = z * z_disp;
@@ -280,8 +313,8 @@ unsigned char getNeighbourCount(int x, int y, int z) {
 
 unsigned char getMostFrequentValue(int x, int y, int z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
-  int z_disp = (x_size + 2) * (y_size + 2);
-  int y_disp = x_size + 2;
+  int z_disp = x_size * y_size;
+  int y_disp = x_size ;
 
   int z1 = (z - 1) * z_disp;
   int z2 = z * z_disp;

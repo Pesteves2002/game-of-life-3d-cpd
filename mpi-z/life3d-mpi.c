@@ -54,14 +54,14 @@ int main(int argc, char *argv[]) {
   double exec_time;
   exec_time = -omp_get_wtime();
 
-  // simulation();
+  simulation();
 
   exec_time += omp_get_wtime();
 
   // only the master process prints the execution time
   if (me == 0) {
-    // fprintf(stderr, "%.1f\n", exec_time);
-    // printLeaderboard();
+    fprintf(stderr, "%.1f\n", exec_time);
+    printLeaderboard();
   }
 
   MPI_Finalize();

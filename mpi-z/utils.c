@@ -11,8 +11,7 @@ float r4_uni() {
   seed ^= (seed << 13);
   seed ^= (seed >> 17);
   seed ^= (seed << 5);
-
-  return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
+return 0.5 + 0.2328306e-09 * (seed_in + (int)seed);
 }
 
 unsigned char *gen_initial_grid(long long N, float density, int input_seed,
