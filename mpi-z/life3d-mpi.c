@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   unsigned char *grid = gen_initial_grid(grid_size, density, input_seed, me,
                                          nprocs, dims, comm_cart);
-  // initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
+  initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
 
   double exec_time;
   exec_time = -omp_get_wtime();

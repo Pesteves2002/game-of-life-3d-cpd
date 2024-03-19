@@ -49,95 +49,36 @@ unsigned char *aux_y;
 unsigned char *aux_z;
 
 void initializeAux(unsigned char *g, int num, int size, int m, int procs,
-                   int axis[3], MPI_Comm comm) {
+                   int axis[1], MPI_Comm comm) {
   grid = g;
   grid_size = size;
   genNum = num;
   me = m;
   nprocs = procs;
   comm_cart = comm;
-  x_size = grid_size / axis[0];
-  y_size = grid_size / axis[1];
-  z_size = grid_size / axis[2];
+
+  int guaranteed_chunk = size / nprocs; // lower bound
+
+  int remainder = size % nprocs; // remainder
+
+  int chunk_size =
+      (remainder >= nprocs - me) ? guaranteed_chunk + 1 : guaranteed_chunk;
+
+  int area_xy = (size + 2) * (size + 2);
 
   if (MPI_Cart_coords(comm_cart, me, 3, coords) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Cart_coords error\n");
     return;
   }
 
-  num_blocks = x_size * y_size * z_size;
-
-  area_zy = z_size * y_size;
-  area_xz = (x_size + 2) * z_size;
-  area_xy = (x_size + 2) * (y_size + 2);
-
-  payload_neg_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-  payload_pos_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-
-  payload_neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-  payload_pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-
   payload_neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
   payload_pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
-
-  neg_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-  pos_x = (unsigned char *)malloc(area_zy * sizeof(unsigned char));
-
-  neg_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
-  pos_y = (unsigned char *)malloc(area_xz * sizeof(unsigned char));
 
   neg_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
   pos_z = (unsigned char *)malloc(area_xy * sizeof(unsigned char));
 
-  aux_x_size = (2 + x_size) * y_size * z_size;
-  aux_y_size = (2 + x_size) * (2 + y_size) * z_size;
-  aux_z_size = (2 + x_size) * (2 + y_size) * (2 + z_size);
-
-  aux_x = (unsigned char *)malloc(aux_x_size * sizeof(unsigned char));
-  aux_y = (unsigned char *)malloc(aux_y_size * sizeof(unsigned char));
+  aux_z_size = (size + 2) * (size + 2) * (size + 2);
   aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
-};
-
-void printDebugX() {
-  printf("aux_x\n");
-  printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
-  printf("expected size: %d %d %d\n", x_size + 2, y_size, z_size);
-  for (int i = 0; i < aux_x_size; i++) {
-    if (i % (2 + x_size) == 0 && i != 0) {
-      printf("\n");
-    }
-
-    if (i % ((2 + x_size) * y_size) == 0) {
-      printf("\n");
-    }
-    if (aux_x[i] == 0) {
-      printf("0");
-    } else {
-      printf("%d", aux_x[i]);
-    }
-  }
-  printf("\n");
-};
-
-void printDebugY() {
-  printf("aux_y\n");
-  printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
-  printf("expected size: %d %d %d\n", x_size + 2, y_size + 2, z_size);
-  for (int i = 0; i < aux_y_size; i++) {
-    if (i % (2 + x_size) == 0 && i != 0) {
-      printf("\n");
-    }
-
-    if (i % ((2 + x_size) * (y_size + 2)) == 0) {
-      printf("\n");
-    }
-    if (aux_y[i] == 0) {
-      printf("0");
-    } else {
-      printf("%d", aux_y[i]);
-    }
-  }
-  printf("\n");
 };
 
 void printDebugZ() {
@@ -161,120 +102,10 @@ void printDebugZ() {
   printf("\n");
 };
 
-void exchangeX() {
-  int neg_x_rank, pos_x_rank;
-
-  if (MPI_Cart_shift(comm_cart, 0, 1, &neg_x_rank, &pos_x_rank) !=
-      MPI_SUCCESS) {
-    fprintf(stderr, "MPI Cart_shift error\n");
-    return;
-  }
-
-  int count_pos = 0;
-  int count_neg = 0;
-  for (int i = 0; i < num_blocks; i++) {
-    if (i % x_size == 0) {
-      payload_neg_x[count_neg] = grid[i];
-      count_neg++;
-    }
-    if (i % x_size == x_size - 1) {
-      payload_pos_x[count_pos] = grid[i];
-      count_pos++;
-    }
-  }
-
-  MPI_Irecv(neg_x, area_zy, MPI_UNSIGNED_CHAR, neg_x_rank, 2, comm_cart,
-            &requests[0]);
-  MPI_Irecv(pos_x, area_zy, MPI_UNSIGNED_CHAR, pos_x_rank, 1, comm_cart,
-            &requests[1]);
-
-  MPI_Isend(payload_neg_x, area_zy, MPI_UNSIGNED_CHAR, neg_x_rank, 1, comm_cart,
-            &requests[2]);
-  MPI_Isend(payload_pos_x, area_zy, MPI_UNSIGNED_CHAR, pos_x_rank, 2, comm_cart,
-            &requests[3]);
-
-  MPI_Waitall(4, requests, statuses);
-
-  memset(aux_x, 10, aux_x_size * sizeof(unsigned char));
-  for (int i = 0; i < area_zy; i++) {
-    aux_x[i * (2 + x_size)] = neg_x[i];
-    aux_x[i * (2 + x_size) + x_size + 1] = pos_x[i];
-  }
-
-  // Fill the rest of the aux_x array with the local grid
-  int index = 0;
-  for (int i = 0; i < num_blocks; i++) {
-    while (aux_x[index] != 10) {
-      index++;
-    }
-    aux_x[index] = grid[i];
-  }
-  if (me == 0) {
-    // printDebugX();
-  }
-}
-
-void exchangeY() {
-  int neg_y_rank, pos_y_rank;
-
-  if (MPI_Cart_shift(comm_cart, 1, 1, &neg_y_rank, &pos_y_rank) !=
-      MPI_SUCCESS) {
-    fprintf(stderr, "MPI Cart_shift error\n");
-    return;
-  }
-
-  int count_neg = 0;
-  int count_pos = 0;
-  for (int z = 0; z < z_size; z++) {
-    for (int x = 0; x < (x_size + 2); x++) {
-      int index = z * (x_size + 2) * y_size + x;
-      payload_neg_y[count_neg] = aux_x[index];
-      count_neg++;
-      index = (z + 1) * (x_size + 2) * y_size - (x_size + 2) + x;
-      payload_pos_y[count_pos] = aux_x[index];
-      count_pos++;
-    }
-  }
-
-  MPI_Irecv(neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 2, comm_cart,
-            &requests[0]);
-  MPI_Irecv(pos_y, area_xz, MPI_UNSIGNED_CHAR, pos_y_rank, 1, comm_cart,
-            &requests[1]);
-
-  MPI_Isend(payload_neg_y, area_xz, MPI_UNSIGNED_CHAR, neg_y_rank, 1, comm_cart,
-            &requests[2]);
-  MPI_Isend(payload_pos_y, area_xz, MPI_UNSIGNED_CHAR, pos_y_rank, 2, comm_cart,
-            &requests[3]);
-
-  MPI_Waitall(4, requests, statuses);
-
-  memset(aux_y, 10, aux_y_size * sizeof(unsigned char));
-  for (int z = 0; z < z_size; z++) {
-    for (int x = 0; x < (x_size + 2); x++) {
-      int index = z * (x_size + 2) * (y_size + 2) + x;
-      aux_y[index] = neg_y[z * (x_size + 2) + x];
-      index = (z + 1) * (x_size + 2) * (y_size + 2) - (x_size + 2) + x;
-      aux_y[index] = pos_y[z * (x_size + 2) + x];
-    }
-  }
-
-  int index = 0;
-  for (int i = 0; i < aux_x_size; i++) {
-    while (aux_y[index] != 10) {
-      index++;
-    }
-    aux_y[index] = aux_x[i];
-  }
-
-  if (me == 0) {
-    // printDebugY();
-  }
-}
-
 void exchangeZ() {
   int neg_z_rank, pos_z_rank;
 
-  if (MPI_Cart_shift(comm_cart, 2, 1, &neg_z_rank, &pos_z_rank) !=
+  if (MPI_Cart_shift(comm_cart, 0, 1, &neg_z_rank, &pos_z_rank) !=
       MPI_SUCCESS) {
     fprintf(stderr, "MPI Cart_shift error\n");
     return;
@@ -328,8 +159,8 @@ void receiveLeaderboards() {
 }
 
 void exchangeMessages() {
-  exchangeX();
-  exchangeY();
+  // exchangeX();
+  // exchangeY();
   exchangeZ();
 }
 
