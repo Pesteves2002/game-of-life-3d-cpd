@@ -9,12 +9,9 @@
 #include <stdlib.h>
 
 unsigned char *gen_initial_grid(long long N, float density, int seed, int me,
-                                int nprocs, int grid[3], MPI_Comm cart_comm);
+                                int nprocs, int grid[1], MPI_Comm cart_comm);
 
-void writeBorders(unsigned char *grid, int paddingSize, int x, int y, int z,
-                  unsigned char value);
-
-void updateNeighborsCount(unsigned char *cache, long long size, int x, int y,
-                          int z, unsigned char value);
+void writeBorders(unsigned char *grid, long long paddingSize, long long x,
+                  long long y, long long z, unsigned char value);
 
 #endif // UTILS_H
