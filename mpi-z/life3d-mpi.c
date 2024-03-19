@@ -21,13 +21,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  const int ndims = 3;
-  int dims[] = {0, 0, 0};
+  const int ndims = 1;
+  int dims[] = {0};
   if (MPI_Dims_create(nprocs, ndims, dims) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Dims_create error\n");
     return 1;
   }
-  const int periods[] = {true, true, true};
+  const int periods[] = {true};
   const int reorder = true;
 
   MPI_Comm comm_cart;
@@ -49,19 +49,19 @@ int main(int argc, char *argv[]) {
 
   unsigned char *grid = gen_initial_grid(grid_size, density, input_seed, me,
                                          nprocs, dims, comm_cart);
-  initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
+  // initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
 
   double exec_time;
   exec_time = -omp_get_wtime();
 
-  simulation();
+  // simulation();
 
   exec_time += omp_get_wtime();
 
   // only the master process prints the execution time
   if (me == 0) {
-    fprintf(stderr, "%.1f\n", exec_time);
-    printLeaderboard();
+    // fprintf(stderr, "%.1f\n", exec_time);
+    // printLeaderboard();
   }
 
   MPI_Finalize();

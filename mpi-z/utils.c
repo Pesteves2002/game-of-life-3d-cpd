@@ -16,12 +16,19 @@ float r4_uni() {
 }
 
 unsigned char *gen_initial_grid(long long N, float density, int input_seed,
-                                int me, int nprocs, int dims[3],
+                                int me, int nprocs, int dims[1],
                                 MPI_Comm comm) {
 
-  int chunk = N * N * N / nprocs;
+  int guaranteed_chunk = N / nprocs; // lower bound
 
-  unsigned char *grid = (unsigned char *)calloc(chunk, sizeof(unsigned char));
+  int remainder = N % nprocs; // remainder
+
+  int chunk_size =
+      (remainder >= nprocs - me) ? guaranteed_chunk + 1 : guaranteed_chunk;
+
+  // allocs either guaranteed_chunk or guaranteed_chunk + 1
+  unsigned char *grid =
+      (unsigned char *)calloc(chunk_size * N * N, sizeof(unsigned char));
   if (grid == NULL) {
     printf("Failed to allocate matrix\n");
     exit(1);
@@ -29,33 +36,30 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed,
 
   init_r4uni(input_seed);
 
-  int x_size = N / dims[0];
-  int y_size = N / dims[1];
-  int z_size = N / dims[2];
-
-  int pos[3];
-
-  if (MPI_Cart_coords(comm, me, 3, pos) != MPI_SUCCESS) {
+  int pos[1];
+  if (MPI_Cart_coords(comm, me, 1, pos) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Cart_coords error\n");
     return NULL;
   }
 
-  int x_min = pos[0] * x_size;
-  int x_max = (pos[0] + 1) * x_size;
-  int y_min = pos[1] * y_size;
-  int y_max = (pos[1] + 1) * y_size;
-  int z_min = pos[2] * z_size;
-  int z_max = (pos[2] + 1) * z_size;
+  int z_min;
+  if (remainder >= nprocs - me) {
+    z_min = (nprocs - remainder) * (guaranteed_chunk) +
+            (me - (nprocs - remainder)) * (guaranteed_chunk + 1);
+  } else {
+    z_min = pos[0] * guaranteed_chunk;
+  }
+
+  int z_max = z_min + chunk_size;
+
 
   for (int z = 0; z < N; z++) {
     for (int y = 0; y < N; y++) {
       for (int x = 0; x < N; x++) {
         unsigned char value =
             r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
-        if (x >= x_min && x < x_max && y >= y_min && y < y_max && z >= z_min &&
-            z < z_max) {
-          int index = (z - z_min) * x_size * y_size + (y - y_min) * x_size +
-                      (x - x_min);
+        if (z >= z_min && z < z_max) {
+          int index = (z - z_min) * N * N + y * N + x;
           grid[index] = value;
         }
       }
