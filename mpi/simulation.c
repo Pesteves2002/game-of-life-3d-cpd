@@ -1,5 +1,4 @@
 #include "simulation.h"
-#include <assert.h>
 
 unsigned char *grid;
 int grid_size;
@@ -125,7 +124,6 @@ void exchangeZ() {
   memcpy(payload_pos_z, grid + last_layer_index,
          area_xy * sizeof(unsigned char));
 
-
   MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
             &requests[0]);
   MPI_Irecv(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 1, comm_cart,
@@ -213,11 +211,11 @@ void simulation() {
     exchangeMessages();
 
     // iterate over the aux_z
-    for (int z = 1; z < chunk_size +  1 ; z++) {
+    for (int z = 1; z < chunk_size + 1; z++) {
       for (int y = 1; y < grid_size + 1; y++) {
         for (int x = 1; x < grid_size + 1; x++) {
           int index = (z) * (grid_size + 2) * (grid_size + 2) +
-		      (y ) * (grid_size + 2) + x;
+                      (y) * (grid_size + 2) + x;
           leaderboard[updateCellState(x, y, z, index)]++;
         }
       }
@@ -239,9 +237,10 @@ unsigned char updateCellState(int x, int y, int z, int index) {
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
   if (current_state != new_state) {
-	  int w = (z - 1) * (grid_size + 2) * (grid_size + 2) + (y) * (grid_size + 2) + (x);
+    int w = (z - 1) * (grid_size + 2) * (grid_size + 2) +
+            (y) * (grid_size + 2) + (x);
     grid[w] = new_state;
-    writeBorders(grid, x_size,  x, y, z-1, new_state);
+    writeBorders(grid, x_size, x, y, z - 1, new_state);
   }
 
   return new_state;
@@ -314,7 +313,7 @@ unsigned char getNeighbourCount(int x, int y, int z) {
 unsigned char getMostFrequentValue(int x, int y, int z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
   int z_disp = x_size * y_size;
-  int y_disp = x_size ;
+  int y_disp = x_size;
 
   int z1 = (z - 1) * z_disp;
   int z2 = z * z_disp;
