@@ -2,11 +2,9 @@
 #define SIMULATION_H
 
 #include "utils.h"
-#include <mpi.h>
-#include <stdbool.h>
 #include <string.h>
 
-void initializeAux(unsigned char *c, int gen_num, int grid_size, int me,
+void initializeAux(unsigned char *c, int gen_num, long long grid_size, int me,
                    int num_procs, int axis[1], MPI_Comm comm);
 
 void simulation();
@@ -17,21 +15,21 @@ void debugPrintNeighbors();
 
 void updateGridState();
 
-unsigned char updateCellState(int x, int y, int z, int index);
+unsigned char updateCellState(long long x, long long y, long long z, long long index);
 
-unsigned char readCellState(int index);
+unsigned char readCellState(long long index);
 
-void writeCellState(int x, int y, int z, int index, unsigned char old_state,
+void writeCellState(long long x, long long y, long long z, long long index, unsigned char old_state,
                     unsigned char new_state);
 
-void resetNeighborsCount(int x, int y, int z);
+void resetNeighborsCount(long long x, long long y, long long z);
 
-unsigned char calculateNextState(int x, int y, int z,
-                                 unsigned char current_state, int index);
+unsigned char calculateNextState(long long x, long long y, long long z,
+                                 unsigned char current_state, long long index);
 
-unsigned char getNeighbourCount(int x, int y, int z);
+unsigned char getNeighbourCount(long long x, long long y, long long z);
 
-unsigned char getMostFrequentValue(int x, int y, int z);
+unsigned char getMostFrequentValue(long long x, long long y, long long z);
 
 void updateMaxScores(int gen_num);
 
