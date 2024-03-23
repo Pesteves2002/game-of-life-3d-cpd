@@ -4,6 +4,7 @@
 #define N_SPECIES (9)
 
 #include <mpi.h>
+#include <omp.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
