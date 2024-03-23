@@ -17,11 +17,11 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed,
                                 int me, int nprocs, int dims[1],
                                 MPI_Comm comm) {
 
-  int guaranteed_chunk = N / nprocs; // lower bound
+  long long guaranteed_chunk = N / nprocs; // lower bound
 
-  int remainder = N % nprocs; // remainder
+  long long remainder = N % nprocs; // remainder
 
-  int chunk_size =
+  long long chunk_size =
       (remainder >= nprocs - me) ? guaranteed_chunk + 1 : guaranteed_chunk;
 
   long long paddingSize = N + 2;
@@ -42,7 +42,7 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed,
     return NULL;
   }
 
-  int z_min;
+  long long z_min;
   if (remainder >= nprocs - me) {
     z_min = (nprocs - remainder) * (guaranteed_chunk) +
             (me - (nprocs - remainder)) * (guaranteed_chunk + 1);
@@ -50,18 +50,18 @@ unsigned char *gen_initial_grid(long long N, float density, int input_seed,
     z_min = pos[0] * guaranteed_chunk;
   }
 
-  int z_max = z_min + chunk_size;
+  long long z_max = z_min + chunk_size;
 
-  for (int z = 0; z < paddingSize; z++) {
-    for (int y = 0; y < paddingSize; y++) {
-      for (int x = 0; x < paddingSize; x++) {
+  for (long long z = 0; z < paddingSize; z++) {
+    for (long long y = 0; y < paddingSize; y++) {
+      for (long long x = 0; x < paddingSize; x++) {
         if (x == 0 || x == paddingSize - 1 || y == 0 || y == paddingSize - 1) {
           continue;
         }
         unsigned char value =
             r4_uni() < density ? (int)(r4_uni() * N_SPECIES) + 1 : 0;
         if (z >= z_min && z < z_max) {
-          int index =
+          long long index =
               (z - z_min) * paddingSize * paddingSize + y * paddingSize + x;
           grid[index] = value;
           writeBorders(grid, N + 2, x, y, (z - z_min), value);
