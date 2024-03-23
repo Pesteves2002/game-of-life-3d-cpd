@@ -1,7 +1,7 @@
 #include "simulation.h"
 
 unsigned char *grid;
-int grid_size;
+long long grid_size;
 int genNum;
 
 long long leaderboard[(N_SPECIES + 1) * 3] = {0}; // current, max, max gen
@@ -15,11 +15,11 @@ int num_blocks;
 MPI_Request requests[4];
 MPI_Status statuses[4];
 
-int z_size, y_size, x_size; // num of blocks in each dimension
+long long z_size, y_size, x_size; // num of blocks in each dimension
 
-int area_zy;
-int area_xz;
-int area_xy;
+long long area_zy;
+long long area_xz;
+long long area_xy;
 
 unsigned char *payload_neg_x;
 unsigned char *payload_pos_x;
@@ -39,17 +39,17 @@ unsigned char *pos_y;
 unsigned char *neg_z;
 unsigned char *pos_z;
 
-int aux_x_size;
-int aux_y_size;
-int aux_z_size;
+long long aux_x_size;
+long long aux_y_size;
+long long aux_z_size;
 
 unsigned char *aux_x;
 unsigned char *aux_y;
 unsigned char *aux_z;
 
-int chunk_size;
+long long chunk_size;
 
-void initializeAux(unsigned char *g, int num, int size, int m, int procs,
+void initializeAux(unsigned char *g, int num, long long size, int m, int procs,
                    int axis[1], MPI_Comm comm) {
   grid = g;
   grid_size = size;
@@ -58,9 +58,9 @@ void initializeAux(unsigned char *g, int num, int size, int m, int procs,
   nprocs = procs;
   comm_cart = comm;
 
-  int guaranteed_chunk = size / nprocs; // lower bound
+  long long guaranteed_chunk = size / nprocs; // lower bound
 
-  int remainder = size % nprocs; // remainder
+  long long remainder = size % nprocs; // remainder
 
   chunk_size =
       (remainder >= nprocs - me) ? guaranteed_chunk + 1 : guaranteed_chunk;
@@ -89,7 +89,7 @@ void printDebugZ() {
   printf("aux_z\n");
   printf("x_size: %d, y_size: %d, z_size: %d\n", x_size, y_size, z_size);
   printf("expected size: %d %d %d\n", x_size + 2, y_size + 2, z_size + 2);
-  for (int i = 0; i < aux_z_size; i++) {
+  for (long long i = 0; i < aux_z_size; i++) {
     if (i % (2 + x_size) == 0 && i != 0) {
       printf("\n");
     }
@@ -119,7 +119,7 @@ void exchangeZ() {
   // n-1)
   memcpy(payload_neg_z, grid, area_xy * sizeof(unsigned char));
 
-  int last_layer_index =
+  long long last_layer_index =
       (chunk_size * area_xy) - area_xy; // index of the last layer
   memcpy(payload_pos_z, grid + last_layer_index,
          area_xy * sizeof(unsigned char));
@@ -143,28 +143,14 @@ void exchangeZ() {
   memcpy(aux_z + (aux_z_size - area_xy), pos_z,
          area_xy * sizeof(unsigned char));
 
-  int index = 0;
-  for (int i = 0; i < chunk_size * (grid_size + 2) * (grid_size + 2); i++) {
+  long long index = 0;
+  for (long long i = 0; i < chunk_size * (grid_size + 2) * (grid_size + 2); i++) {
     while (aux_z[index] != 10) {
       index++;
     }
     aux_z[index] = grid[i];
   }
 
-  // if (me == 0) {
-  //   fprintf(stdout, "aux_z\n");
-  //   for (int i = 0; i < aux_z_size; i++) {
-  //     if (i % (grid_size + 2) == 0 && i != 0) {
-  //       fprintf(stdout, "\n");
-  //     }
-  //     if (i % (area_xy) == 0) {
-  //       fprintf(stdout, "||||\n");
-  //     }
-  //
-  //     fprintf(stdout, "%d ", aux_z[i]);
-  //   }
-  //   fprintf(stdout, "\n\n");
-  // }
   if (me == 0) {
     // printDebugZ();
   }
@@ -189,10 +175,10 @@ void exchangeMessages() {
 
 void simulation() {
   // Initialize leaderboard with the initial state
-  for (int z = 0; z < chunk_size; z++) {
-    for (int y = 1; y < grid_size + 1; y++) {
-      for (int x = 1; x < grid_size + 1; x++) {
-        int index =
+  for (long long z = 0; z < chunk_size; z++) {
+    for (long long y = 1; y < grid_size + 1; y++) {
+      for (long long x = 1; x < grid_size + 1; x++) {
+        long long index =
             z * (grid_size + 2) * (grid_size + 2) + y * (grid_size + 2) + x;
         leaderboard[grid[index]]++;
       }
@@ -211,10 +197,10 @@ void simulation() {
     exchangeMessages();
 
     // iterate over the aux_z
-    for (int z = 1; z < chunk_size + 1; z++) {
-      for (int y = 1; y < grid_size + 1; y++) {
-        for (int x = 1; x < grid_size + 1; x++) {
-          int index = (z) * (grid_size + 2) * (grid_size + 2) +
+    for (long long z = 1; z < chunk_size + 1; z++) {
+      for (long long y = 1; y < grid_size + 1; y++) {
+        for (long long x = 1; x < grid_size + 1; x++) {
+          long long index = (z) * (grid_size + 2) * (grid_size + 2) +
                       (y) * (grid_size + 2) + x;
           leaderboard[updateCellState(x, y, z, index)]++;
         }
@@ -231,13 +217,13 @@ void simulation() {
   }
 };
 
-unsigned char updateCellState(int x, int y, int z, int index) {
+unsigned char updateCellState(long long x, long long y, long long z, long long index) {
   unsigned char current_state = aux_z[index];
 
   unsigned char new_state = calculateNextState(x, y, z, current_state, index);
 
   if (current_state != new_state) {
-    int w = (z - 1) * (grid_size + 2) * (grid_size + 2) +
+    long long w = (z - 1) * (grid_size + 2) * (grid_size + 2) +
             (y) * (grid_size + 2) + (x);
     grid[w] = new_state;
     writeBorders(grid, x_size, x, y, z - 1, new_state);
@@ -247,8 +233,8 @@ unsigned char updateCellState(int x, int y, int z, int index) {
 };
 
 // wraps around the grid
-unsigned char calculateNextState(int x, int y, int z,
-                                 unsigned char current_state, int index) {
+unsigned char calculateNextState(long long x, long long y, long long z,
+                                 unsigned char current_state, long long index) {
 
   unsigned char neighbourCount = getNeighbourCount(x, y, z);
   if (current_state == 0) {
@@ -262,21 +248,21 @@ unsigned char calculateNextState(int x, int y, int z,
   return (neighbourCount <= 4 || neighbourCount > 13) ? 0 : current_state;
 };
 
-unsigned char getNeighbourCount(int x, int y, int z) {
+unsigned char getNeighbourCount(long long x, long long y, long long z) {
   unsigned char count = 0;
 
-  int z_disp = x_size * y_size;
-  int y_disp = x_size;
+  long long z_disp = x_size * y_size;
+  long long y_disp = x_size;
 
-  int z1 = (z - 1) * z_disp;
-  int z2 = z * z_disp;
-  int z3 = (z + 1) * z_disp;
-  int y1 = (y - 1) * y_disp;
-  int y2 = y * y_disp;
-  int y3 = (y + 1) * y_disp;
-  int x1 = x - 1;
-  int x2 = x;
-  int x3 = x + 1;
+  long long z1 = (z - 1) * z_disp;
+  long long z2 = z * z_disp;
+  long long z3 = (z + 1) * z_disp;
+  long long y1 = (y - 1) * y_disp;
+  long long y2 = y * y_disp;
+  long long y3 = (y + 1) * y_disp;
+  long long x1 = x - 1;
+  long long x2 = x;
+  long long x3 = x + 1;
 
   count += (aux_z[z1 + y1 + x1] != 0);
   count += (aux_z[z1 + y1 + x2] != 0);
@@ -310,20 +296,20 @@ unsigned char getNeighbourCount(int x, int y, int z) {
   return count;
 };
 
-unsigned char getMostFrequentValue(int x, int y, int z) {
+unsigned char getMostFrequentValue(long long x, long long y, long long z) {
   unsigned char neighborsValues[N_SPECIES + 1] = {0};
-  int z_disp = x_size * y_size;
-  int y_disp = x_size;
+  long long z_disp = x_size * y_size;
+  long long y_disp = x_size;
 
-  int z1 = (z - 1) * z_disp;
-  int z2 = z * z_disp;
-  int z3 = (z + 1) * z_disp;
-  int y1 = (y - 1) * y_disp;
-  int y2 = y * y_disp;
-  int y3 = (y + 1) * y_disp;
-  int x1 = x - 1;
-  int x2 = x;
-  int x3 = x + 1;
+  long long z1 = (z - 1) * z_disp;
+  long long z2 = z * z_disp;
+  long long z3 = (z + 1) * z_disp;
+  long long y1 = (y - 1) * y_disp;
+  long long y2 = y * y_disp;
+  long long y3 = (y + 1) * y_disp;
+  long long x1 = x - 1;
+  long long x2 = x;
+  long long x3 = x + 1;
 
   neighborsValues[aux_z[z1 + y1 + x1]]++;
   neighborsValues[aux_z[z1 + y1 + x2]]++;
@@ -366,10 +352,10 @@ unsigned char getMostFrequentValue(int x, int y, int z) {
 };
 
 void debugPrintGrid() {
-  for (int z = 0; z < z_size; z++) {
-    for (int y = 0; y < y_size; y++) {
-      for (int x = 0; x < x_size; x++) {
-        int index = z * y_size * x_size + y * x_size + x;
+  for (long long z = 0; z < z_size; z++) {
+    for (long long y = 0; y < y_size; y++) {
+      for (long long x = 0; x < x_size; x++) {
+        long long index = z * y_size * x_size + y * x_size + x;
         int valueToPrint = (int)grid[index];
         if (valueToPrint == 0) {
           fprintf(stdout, " ");
