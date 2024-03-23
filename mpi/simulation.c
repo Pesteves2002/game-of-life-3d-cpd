@@ -13,7 +13,6 @@ int nprocs;
 int num_blocks;
 
 MPI_Request requests[4];
-MPI_Status statuses[4];
 
 long long z_size, y_size, x_size; // num of blocks in each dimension
 
@@ -67,6 +66,27 @@ void initializeAux(unsigned char *g, int num, long long size, int m, int procs,
 
   aux_z_size = paddingSize * paddingSize * (chunk_size + 2);
   aux_z = (unsigned char *)malloc(aux_z_size * sizeof(unsigned char));
+
+  int neg_z_rank, pos_z_rank;
+
+  if (MPI_Cart_shift(comm_cart, 0, 1, &neg_z_rank, &pos_z_rank) !=
+      MPI_SUCCESS) {
+    fprintf(stderr, "MPI Cart_shift error\n");
+    return;
+  }
+
+  MPI_Recv_init(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
+                &requests[0]);
+
+  MPI_Recv_init(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 1, comm_cart,
+                &requests[1]);
+
+  MPI_Send_init(payload_neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 1,
+                comm_cart, &requests[2]);
+
+  MPI_Send_init(payload_pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 2,
+                comm_cart, &requests[3]);
+
 };
 
 void printDebugZ() {
@@ -108,17 +128,8 @@ void exchangeZ() {
   memcpy(payload_pos_z, grid + last_layer_index,
          area_xy * sizeof(unsigned char));
 
-  MPI_Irecv(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
-            &requests[0]);
-  MPI_Irecv(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 1, comm_cart,
-            &requests[1]);
-
-  MPI_Isend(payload_neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 1, comm_cart,
-            &requests[2]);
-  MPI_Isend(payload_pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 2, comm_cart,
-            &requests[3]);
-
-  MPI_Waitall(4, requests, statuses);
+  MPI_Startall(4, requests);
+  MPI_Waitall(4, requests, MPI_STATUSES_IGNORE);
 
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
   memcpy(aux_z + area_xy, grid, chunk_size * area_xy * sizeof(unsigned char));
