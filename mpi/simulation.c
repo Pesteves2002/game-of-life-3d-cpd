@@ -17,24 +17,10 @@ MPI_Status statuses[4];
 
 long long z_size, y_size, x_size; // num of blocks in each dimension
 
-long long area_zy;
-long long area_xz;
 long long area_xy;
-
-unsigned char *payload_neg_x;
-unsigned char *payload_pos_x;
-
-unsigned char *payload_neg_y;
-unsigned char *payload_pos_y;
 
 unsigned char *payload_neg_z;
 unsigned char *payload_pos_z;
-
-unsigned char *neg_x;
-unsigned char *pos_x;
-
-unsigned char *neg_y;
-unsigned char *pos_y;
 
 unsigned char *neg_z;
 unsigned char *pos_z;
@@ -43,8 +29,6 @@ long long aux_x_size;
 long long aux_y_size;
 long long aux_z_size;
 
-unsigned char *aux_x;
-unsigned char *aux_y;
 unsigned char *aux_z;
 
 long long chunk_size;
@@ -136,20 +120,10 @@ void exchangeZ() {
 
   MPI_Waitall(4, requests, statuses);
 
-  memset(aux_z, 10, aux_z_size * sizeof(unsigned char));
-
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
-
+  memcpy(aux_z + area_xy, grid, chunk_size * area_xy * sizeof(unsigned char));
   memcpy(aux_z + (aux_z_size - area_xy), pos_z,
          area_xy * sizeof(unsigned char));
-
-  long long index = 0;
-  for (long long i = 0; i < chunk_size * (grid_size + 2) * (grid_size + 2); i++) {
-    while (aux_z[index] != 10) {
-      index++;
-    }
-    aux_z[index] = grid[i];
-  }
 
   if (me == 0) {
     // printDebugZ();
