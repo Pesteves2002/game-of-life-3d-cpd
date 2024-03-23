@@ -21,13 +21,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  const int ndims = 3;
-  int dims[] = {0, 0, 0};
+  const int ndims = 1;
+  int dims[] = {0};
   if (MPI_Dims_create(nprocs, ndims, dims) != MPI_SUCCESS) {
     fprintf(stderr, "MPI Dims_create error\n");
     return 1;
   }
-  const int periods[] = {true, true, true};
+  const int periods[] = {true};
   const int reorder = true;
 
   MPI_Comm comm_cart;
