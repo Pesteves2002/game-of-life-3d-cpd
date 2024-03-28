@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
     printLeaderboard();
   }
 
+  MPI_Barrier(comm_cart);
+
   MPI_Finalize();
   return 0;
 }
