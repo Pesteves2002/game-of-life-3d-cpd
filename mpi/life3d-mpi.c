@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
                                          nprocs, dims, comm_cart);
   initializeAux(grid, gen_num, grid_size, me, nprocs, dims, comm_cart);
 
+  MPI_Barrier(comm_cart);
+
   double exec_time;
   exec_time = -omp_get_wtime();
 
