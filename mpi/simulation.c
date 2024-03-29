@@ -164,6 +164,8 @@ void simulation() {
   }
 
   receiveLeaderboards();
+  MPI_Barrier(comm_cart);
+
   if (me == 0) {
     updateMaxScores(0);
   }
@@ -187,6 +189,7 @@ void simulation() {
     sendZ();
 
     receiveLeaderboards();
+    MPI_Barrier(comm_cart);
 
     if (me == 0) {
       updateMaxScores(gen);
