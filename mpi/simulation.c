@@ -125,6 +125,8 @@ void sendZ() {
 void processZ() {
   MPI_Waitall(4, requests, MPI_STATUSES_IGNORE);
 
+  MPI_Barrier(comm_cart);
+
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
   memcpy(aux_z + area_xy, grid, chunk_size * area_xy * sizeof(unsigned char));
   memcpy(aux_z + (aux_z_size - area_xy), pos_z,
@@ -162,6 +164,8 @@ void simulation() {
   }
 
   receiveLeaderboards();
+  MPI_Barrier(comm_cart);
+
   if (me == 0) {
     updateMaxScores(0);
   }
@@ -185,6 +189,7 @@ void simulation() {
     sendZ();
 
     receiveLeaderboards();
+    MPI_Barrier(comm_cart);
 
     if (me == 0) {
       updateMaxScores(gen);
