@@ -59,8 +59,6 @@ int main(int argc, char *argv[]) {
 
   exec_time += omp_get_wtime();
 
-  MPI_Barrier(comm_cart);
-
   // only the master process prints the execution time
   if (me == 0) {
     fprintf(stderr, "%.1f\n", exec_time);
