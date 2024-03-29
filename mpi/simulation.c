@@ -75,16 +75,16 @@ void initializeAux(unsigned char *g, int num, long long size, int m, int procs,
     return;
   }
 
-  MPI_Recv_init(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 2, comm_cart,
-                &requests[0]);
+  MPI_Recv_init(neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, MPI_ANY_TAG,
+                comm_cart, &requests[0]);
 
-  MPI_Recv_init(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 1, comm_cart,
-                &requests[1]);
+  MPI_Recv_init(pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, MPI_ANY_TAG,
+                comm_cart, &requests[1]);
 
-  MPI_Send_init(payload_neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 1,
+  MPI_Send_init(payload_neg_z, area_xy, MPI_UNSIGNED_CHAR, neg_z_rank, 0,
                 comm_cart, &requests[2]);
 
-  MPI_Send_init(payload_pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 2,
+  MPI_Send_init(payload_pos_z, area_xy, MPI_UNSIGNED_CHAR, pos_z_rank, 0,
                 comm_cart, &requests[3]);
 };
 
@@ -124,6 +124,8 @@ void sendZ() {
 
 void processZ() {
   MPI_Waitall(4, requests, MPI_STATUSES_IGNORE);
+
+  MPI_Barrier(comm_cart);
 
   memcpy(aux_z, neg_z, area_xy * sizeof(unsigned char));
   memcpy(aux_z + area_xy, grid, chunk_size * area_xy * sizeof(unsigned char));
